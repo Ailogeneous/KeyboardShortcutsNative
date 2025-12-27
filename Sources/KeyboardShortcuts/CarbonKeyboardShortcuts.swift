@@ -1,4 +1,3 @@
-#if os(macOS)
 import Carbon.HIToolbox
 
 private func carbonKeyboardShortcutsEventHandler(eventHandlerCall: EventHandlerCallRef?, event: EventRef?, userData: UnsafeMutableRawPointer?) -> OSStatus {
@@ -47,17 +46,6 @@ enum CarbonKeyboardShortcuts {
 		EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventRawKeyUp))
 	]
 
-	private static let keyEventMonitor = RunLoopLocalEventMonitor(events: [.keyDown, .keyUp], runLoopMode: .eventTracking) { event in
-		guard
-			let eventRef = OpaquePointer(event.eventRef),
-			handleRawKeyEvent(eventRef) == noErr
-		else {
-			return event
-		}
-
-		return nil
-	}
-
 	private static func setUpEventHandlerIfNeeded() {
 		guard
 			eventHandler == nil,
@@ -94,35 +82,11 @@ enum CarbonKeyboardShortcuts {
 		}
 
 		if KeyboardShortcuts.isEnabled {
-			if KeyboardShortcuts.isMenuOpen {
-				softUnregisterAll()
-				RemoveEventTypesFromHandler(eventHandler, hotKeyEventTypes.count, hotKeyEventTypes)
-
-				if #available(macOS 14, *) {
-					keyEventMonitor.start()
-				} else {
-					AddEventTypesToHandler(eventHandler, rawKeyEventTypes.count, rawKeyEventTypes)
-				}
-			} else {
-				softRegisterAll()
-
-				if #available(macOS 14, *) {
-					keyEventMonitor.stop()
-				} else {
-					RemoveEventTypesFromHandler(eventHandler, rawKeyEventTypes.count, rawKeyEventTypes)
-				}
-
-				AddEventTypesToHandler(eventHandler, hotKeyEventTypes.count, hotKeyEventTypes)
-			}
+			softRegisterAll()
+			AddEventTypesToHandler(eventHandler, hotKeyEventTypes.count, hotKeyEventTypes)
 		} else {
 			softUnregisterAll()
 			RemoveEventTypesFromHandler(eventHandler, hotKeyEventTypes.count, hotKeyEventTypes)
-
-			if #available(macOS 14, *) {
-				keyEventMonitor.stop()
-			} else {
-				RemoveEventTypesFromHandler(eventHandler, rawKeyEventTypes.count, rawKeyEventTypes)
-			}
 		}
 	}
 
@@ -348,4 +312,3 @@ extension CarbonKeyboardShortcuts {
 		}
 	}
 }
-#endif

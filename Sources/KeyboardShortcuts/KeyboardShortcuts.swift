@@ -1,5 +1,5 @@
 #if os(macOS)
-import AppKit.NSMenu
+import SwiftUI
 
 /**
 Global keyboard shortcuts for your macOS app.
@@ -33,15 +33,10 @@ public enum KeyboardShortcuts {
 		shortcutsForLegacyHandlers.union(shortcutsForStreamHandlers)
 	}
 
-	private static var isInitialized = false
-
-	private static var openMenuObserver: NSObjectProtocol?
-	private static var closeMenuObserver: NSObjectProtocol?
-
 	/**
 	When `true`, event handlers will not be called for registered keyboard shortcuts.
 	*/
-	static var isPaused = false
+	public static var isPaused = false
 
 	/**
 	Enable/disable monitoring of all keyboard shortcuts.
@@ -69,23 +64,6 @@ public enum KeyboardShortcuts {
 				return .init(name)
 			}
 			.toSet()
-	}
-
-	/**
-	Enable keyboard shortcuts to work even when an `NSMenu` is open by setting this property when the menu opens and closes.
-
-	`NSMenu` runs in a tracking run mode that blocks keyboard shortcuts events. When you set this property to `true`, it switches to a different kind of event handler, which does work when the menu is open.
-
-	The main use-case for this is toggling the menu of a menu bar app with a keyboard shortcut.
-	*/
-	private(set) static var isMenuOpen = false {
-		didSet {
-			guard isMenuOpen != oldValue else {
-				return
-			}
-
-			CarbonKeyboardShortcuts.updateEventHandler()
-		}
 	}
 
 	private static func register(_ shortcut: Shortcut) {
@@ -145,22 +123,6 @@ public enum KeyboardShortcuts {
 		registeredShortcuts.removeAll()
 
 		// TODO: Should remove user defaults too.
-	}
-
-	static func initialize() {
-		guard !isInitialized else {
-			return
-		}
-
-		openMenuObserver = NotificationCenter.default.addObserver(forName: NSMenu.didBeginTrackingNotification, object: nil, queue: nil) { _ in
-			isMenuOpen = true
-		}
-
-		closeMenuObserver = NotificationCenter.default.addObserver(forName: NSMenu.didEndTrackingNotification, object: nil, queue: nil) { _ in
-			isMenuOpen = false
-		}
-
-		isInitialized = true
 	}
 
 	/**
@@ -354,15 +316,32 @@ public enum KeyboardShortcuts {
 	You would usually not need this as the user would be the one setting the shortcut in a settings user-interface, but it can be useful when, for example, migrating from a different keyboard shortcuts package.
 	*/
 	public static func setShortcut(_ shortcut: Shortcut?, for name: Name) {
-		if let shortcut {
-			userDefaultsSet(name: name, shortcut: shortcut)
-		} else {
-			if name.defaultShortcut != nil {
-				userDefaultsDisable(name: name)
-			} else {
-				userDefaultsRemove(name: name)
-			}
+		// 1. Get the old shortcut before we change anything.
+		let oldShortcut = getShortcut(for: name)
+
+		// 2. If there was an old shortcut, and it's different from the new one, unregister it.
+		if let oldShortcut, oldShortcut != shortcut {
+			unregister(oldShortcut)
 		}
+
+		// 3. Set the new value in UserDefaults.
+		if let shortcut {
+			guard let encoded = try? JSONEncoder().encode(shortcut).toString else {
+				return
+			}
+			UserDefaults.standard.set(encoded, forKey: userDefaultsKey(for: name))
+		} else {
+			// If shortcut is nil, remove it from UserDefaults.
+			UserDefaults.standard.removeObject(forKey: userDefaultsKey(for: name))
+		}
+
+		// 4. Register the new shortcut if it exists and has any handlers.
+		if shortcut != nil {
+			registerShortcutIfNeeded(for: name)
+		}
+
+		// 5. Post notification about the change.
+		userDefaultsDidChange(name: name)
 	}
 
 	/**
@@ -373,7 +352,7 @@ public enum KeyboardShortcuts {
 			let data = UserDefaults.standard.string(forKey: userDefaultsKey(for: name))?.data(using: .utf8),
 			let decoded = try? JSONDecoder().decode(Shortcut.self, from: data)
 		else {
-			return nil
+			return name.defaultShortcut
 		}
 
 		return decoded
@@ -431,62 +410,6 @@ public enum KeyboardShortcuts {
 		}
 	}
 
-	/**
-	Listen to the keyboard shortcut with the given name being pressed.
-
-	You can register multiple listeners.
-
-	You can safely call this even if the user has not yet set a keyboard shortcut. It will just be inactive until they do.
-
-	- Important: This will be deprecated in the future. Prefer ``events(for:)`` for new code.
-
-	```swift
-	import AppKit
-	import KeyboardShortcuts
-
-	@main
-	final class AppDelegate: NSObject, NSApplicationDelegate {
-		func applicationDidFinishLaunching(_ notification: Notification) {
-			KeyboardShortcuts.onKeyDown(for: .toggleUnicornMode) { [self] in
-				isUnicornMode.toggle()
-			}
-		}
-	}
-	```
-	*/
-	public static func onKeyDown(for name: Name, action: @escaping () -> Void) {
-		legacyKeyDownHandlers[name, default: []].append(action)
-		registerShortcutIfNeeded(for: name)
-	}
-
-	/**
-	Listen to the keyboard shortcut with the given name being pressed.
-
-	You can register multiple listeners.
-
-	You can safely call this even if the user has not yet set a keyboard shortcut. It will just be inactive until they do.
-
-	- Important: This will be deprecated in the future. Prefer ``events(for:)`` for new code.
-
-	```swift
-	import AppKit
-	import KeyboardShortcuts
-
-	@main
-	final class AppDelegate: NSObject, NSApplicationDelegate {
-		func applicationDidFinishLaunching(_ notification: Notification) {
-			KeyboardShortcuts.onKeyUp(for: .toggleUnicornMode) { [self] in
-				isUnicornMode.toggle()
-			}
-		}
-	}
-	```
-	*/
-	public static func onKeyUp(for name: Name, action: @escaping () -> Void) {
-		legacyKeyUpHandlers[name, default: []].append(action)
-		registerShortcutIfNeeded(for: name)
-	}
-
 	private static let userDefaultsPrefix = "KeyboardShortcuts_"
 
 	private static func userDefaultsKey(for shortcutName: Name) -> String { "\(userDefaultsPrefix)\(shortcutName.rawValue)"
@@ -495,40 +418,6 @@ public enum KeyboardShortcuts {
 	static func userDefaultsDidChange(name: Name) {
 		// TODO: Use proper UserDefaults observation instead of this.
 		NotificationCenter.default.post(name: .shortcutByNameDidChange, object: nil, userInfo: ["name": name])
-	}
-
-	static func userDefaultsSet(name: Name, shortcut: Shortcut) {
-		guard let encoded = try? JSONEncoder().encode(shortcut).toString else {
-			return
-		}
-
-		if let oldShortcut = getShortcut(for: name) {
-			unregister(oldShortcut)
-		}
-
-		register(shortcut)
-		UserDefaults.standard.set(encoded, forKey: userDefaultsKey(for: name))
-		userDefaultsDidChange(name: name)
-	}
-
-	static func userDefaultsDisable(name: Name) {
-		guard let shortcut = getShortcut(for: name) else {
-			return
-		}
-
-		UserDefaults.standard.set(false, forKey: userDefaultsKey(for: name))
-		unregister(shortcut)
-		userDefaultsDidChange(name: name)
-	}
-
-	static func userDefaultsRemove(name: Name) {
-		guard let shortcut = getShortcut(for: name) else {
-			return
-		}
-
-		UserDefaults.standard.removeObject(forKey: userDefaultsKey(for: name))
-		unregister(shortcut)
-		userDefaultsDidChange(name: name)
 	}
 
 	static func userDefaultsContains(name: Name) -> Bool {

@@ -4,6 +4,9 @@
 	<br>
 </div>
 
+|| This is a Native-Styled Fork of the following package: ||
+|| Please see MainScreen.swift for an example || 
+
 This package lets you add support for user-customizable global keyboard shortcuts to your macOS app in minutes. It's fully sandboxed and Mac App Store compatible. And it's used in production by [Dato](https://sindresorhus.com/dato), [Jiffy](https://sindresorhus.com/jiffy), [Plash](https://github.com/sindresorhus/Plash), and [Lungo](https://sindresorhus.com/lungo).
 
 I'm happy to accept more configurability and features. PRs welcome! What you see here is just what I needed for my own apps.
@@ -12,7 +15,7 @@ I'm happy to accept more configurability and features. PRs welcome! What you see
 
 ## Requirements
 
-macOS 10.15+
+macOS 14+
 
 ## Install
 

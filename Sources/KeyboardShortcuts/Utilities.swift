@@ -1,6 +1,4 @@
 import SwiftUI
-
-#if os(macOS)
 import Carbon.HIToolbox
 
 
@@ -526,11 +524,7 @@ extension Dictionary {
 		index(forKey: key) != nil
 	}
 }
-#endif
 
-
-@available(iOS 14.0, *)
-@available(macOS 11.0, *)
 extension KeyEquivalent {
 	init?(unicodeScalarValue value: Int) {
 		guard let character = Character(unicodeScalarValue: value) else {

@@ -45,8 +45,6 @@ extension KeyboardShortcuts {
 			{
 				setShortcut(initialShortcut, for: self)
 			}
-
-			KeyboardShortcuts.initialize()
 		}
 	}
 }

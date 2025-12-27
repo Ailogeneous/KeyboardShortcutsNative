@@ -1,6 +1,6 @@
 import Testing
 import Foundation
-import AppKit
+import SwiftUI
 import KeyboardShortcuts
 
 @Suite("KeyboardShortcuts Tests", .serialized)
@@ -137,8 +137,8 @@ struct KeyboardShortcutsTests {
 	@Test("Empty modifiers")
 	func testEmptyModifiers() throws {
 		let shortcut = KeyboardShortcuts.Shortcut(.a, modifiers: [])
-		#expect(shortcut.modifiers.isEmpty)
-		#expect(shortcut.modifiers.ks_symbolicRepresentation == "")
+		#expect(shortcut.modifiers == [])
+		#expect(shortcut.modifiers.description == "")
 	}
 
 	@Test("Function keys")
@@ -251,58 +251,44 @@ struct KeyboardShortcutsTests {
 struct ModifierSymbolTests {
 	@Test("Individual modifier symbols")
 	func testIndividualModifierSymbols() {
-		#expect(NSEvent.ModifierFlags.control.ks_symbolicRepresentation == "⌃")
-		#expect(NSEvent.ModifierFlags.option.ks_symbolicRepresentation == "⌥")
-		#expect(NSEvent.ModifierFlags.shift.ks_symbolicRepresentation == "⇧")
-		#expect(NSEvent.ModifierFlags.command.ks_symbolicRepresentation == "⌘")
-		#expect(NSEvent.ModifierFlags([]).ks_symbolicRepresentation == "")
+		#expect(EventModifiers.control.description == "⌃")
+		#expect(EventModifiers.option.description == "⌥")
+		#expect(EventModifiers.shift.description == "⇧")
+		#expect(EventModifiers.command.description == "⌘")
+		#expect(EventModifiers([]).description == "")
 	}
 
 	@Test("Combined modifier symbols")
 	func testCombinedModifierSymbols() {
 		// macOS standard order: Control, Option, Shift, Command
 		// Two modifiers
-		#expect(NSEvent.ModifierFlags([.control, .option]).ks_symbolicRepresentation == "⌃⌥")
-		#expect(NSEvent.ModifierFlags([.command, .shift]).ks_symbolicRepresentation == "⇧⌘")
-		#expect(NSEvent.ModifierFlags([.option, .command]).ks_symbolicRepresentation == "⌥⌘")
+		#expect(EventModifiers([.control, .option]).description == "⌃⌥")
+		#expect(EventModifiers([.command, .shift]).description == "⇧⌘")
+		#expect(EventModifiers([.option, .command]).description == "⌥⌘")
 
 		// Three modifiers
-		#expect(NSEvent.ModifierFlags([.control, .option, .shift]).ks_symbolicRepresentation == "⌃⌥⇧")
-		#expect(NSEvent.ModifierFlags([.control, .shift, .command]).ks_symbolicRepresentation == "⌃⇧⌘")
+		#expect(EventModifiers([.control, .option, .shift]).description == "⌃⌥⇧")
+		#expect(EventModifiers([.control, .shift, .command]).description == "⌃⇧⌘")
 
 		// All four main modifiers
-		#expect(NSEvent.ModifierFlags([.control, .option, .shift, .command]).ks_symbolicRepresentation == "⌃⌥⇧⌘")
+		#expect(EventModifiers([.control, .option, .shift, .command]).description == "⌃⌥⇧⌘")
 	}
 
 	@Test("Modifier symbols via shortcut")
 	func testModifierSymbolsViaShortcut() {
 		let shortcut = KeyboardShortcuts.Shortcut(.a, modifiers: [.command, .shift])
-		#expect(shortcut.modifiers.ks_symbolicRepresentation == "⇧⌘")
+		#expect(shortcut.modifiers.description == "⇧⌘")
 
 		let complexShortcut = KeyboardShortcuts.Shortcut(.space, modifiers: [.control, .option, .command])
-		#expect(complexShortcut.modifiers.ks_symbolicRepresentation == "⌃⌥⌘")
+		#expect(complexShortcut.modifiers.description == "⌃⌥⌘")
 	}
 
 	@Test("Modifier order independence")
 	func testModifierOrderIndependence() {
 		// No matter the input order, output should be consistent
-		#expect(NSEvent.ModifierFlags([.command, .shift, .option, .control]).ks_symbolicRepresentation == "⌃⌥⇧⌘")
-		#expect(NSEvent.ModifierFlags([.shift, .control, .command, .option]).ks_symbolicRepresentation == "⌃⌥⇧⌘")
-		#expect(NSEvent.ModifierFlags([.option, .command, .control, .shift]).ks_symbolicRepresentation == "⌃⌥⇧⌘")
-	}
-
-	@Test("Special modifiers and edge cases")
-	func testSpecialModifiersAndEdgeCases() {
-		// Function key modifier
-		#expect(NSEvent.ModifierFlags.function.ks_symbolicRepresentation == "🌐︎")
-		#expect(NSEvent.ModifierFlags([.function, .command]).ks_symbolicRepresentation == "⌘🌐︎")
-
-		// All modifiers combined
-		let allModifiers: NSEvent.ModifierFlags = [.control, .option, .shift, .command, .function]
-		#expect(allModifiers.ks_symbolicRepresentation == "⌃⌥⇧⌘🌐︎")
-
-		// Empty modifiers
-		#expect(NSEvent.ModifierFlags().ks_symbolicRepresentation == "")
+		#expect(EventModifiers([.command, .shift, .option, .control]).description == "⌃⌥⇧⌘")
+		#expect(EventModifiers([.shift, .control, .command, .option]).description == "⌃⌥⇧⌘")
+		#expect(EventModifiers([.option, .command, .control, .shift]).description == "⌃⌥⇧⌘")
 	}
 }
 

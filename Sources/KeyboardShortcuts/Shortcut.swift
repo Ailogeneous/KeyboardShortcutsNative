@@ -1,7 +1,5 @@
-#if os(macOS)
-import AppKit
-import Carbon.HIToolbox
 import SwiftUI
+import Carbon.HIToolbox
 
 extension KeyboardShortcuts {
 	/**
@@ -10,10 +8,10 @@ extension KeyboardShortcuts {
 	public struct Shortcut: Hashable, Codable, Sendable {
 		/**
 		Carbon modifiers are not always stored as the same number.
-
 		For example, the system has `⌃F2` stored with the modifiers number `135168`, but if you press the keyboard shortcut, you get `4096`.
 		*/
 		private static func normalizeModifiers(_ carbonModifiers: Int) -> Int {
+			// We need to use `NSEvent` here, not `SwiftUI.EventModifiers`, as the latter is not exhaustive.
 			NSEvent.ModifierFlags(carbon: carbonModifiers).carbon
 		}
 
@@ -25,18 +23,22 @@ extension KeyboardShortcuts {
 		/**
 		The modifier keys of the shortcut.
 		*/
-		public var modifiers: NSEvent.ModifierFlags { NSEvent.ModifierFlags(carbon: carbonModifiers) }
+		public var modifiers: SwiftUI.EventModifiers { SwiftUI.EventModifiers(carbon: carbonModifiers) }
+
+		/**
+		The modifier keys of the shortcut as an `NSEvent.ModifierFlags`.
+		This is used for the menu-searching logic.
+		*/
+		var nsEventModifiers: NSEvent.ModifierFlags { NSEvent.ModifierFlags(carbon: carbonModifiers) }
 
 		/**
 		Low-level representation of the key.
-
 		You most likely don't need this.
 		*/
 		public let carbonKeyCode: Int
 
 		/**
 		Low-level representation of the modifier keys.
-
 		You most likely don't need this.
 		*/
 		public let carbonModifiers: Int
@@ -44,7 +46,7 @@ extension KeyboardShortcuts {
 		/**
 		Initialize from a strongly-typed key and modifiers.
 		*/
-		public init(_ key: Key, modifiers: NSEvent.ModifierFlags = []) {
+		public init(_ key: Key, modifiers: SwiftUI.EventModifiers = []) {
 			self.init(
 				carbonKeyCode: key.rawValue,
 				carbonModifiers: modifiers.carbon
@@ -52,22 +54,23 @@ extension KeyboardShortcuts {
 		}
 
 		/**
-		Initialize from a key event.
+		Initialize from a key press.
 		*/
-		public init?(event: NSEvent) {
-			guard event.isKeyEvent else {
+		public init?(keyPress: SwiftUI.KeyPress) {
+			guard
+				let key = Key(keyPress: keyPress)
+			else {
 				return nil
 			}
 
 			self.init(
-				carbonKeyCode: Int(event.keyCode),
-				// Note: We could potentially support users specifying shortcuts with the Fn key, but I haven't found a reliable way to differentate when to display the Fn key and not. For example, with Fn+F1 we only want to display F1, but with Fn+V, we want to display both. I cannot just specialize it for F keys as it applies to other keys too, like Fn+arrowup.
-				carbonModifiers: event.modifierFlags.subtracting(.function).carbon
+				key,
+				modifiers: keyPress.modifiers
 			)
 		}
 
 		/**
-		Initialize from a keyboard shortcut stored by `Recorder` or `RecorderCocoa`.
+		Initialize from a keyboard shortcut stored by `Recorder`.
 		*/
 		public init?(name: Name) {
 			guard let shortcut = getShortcut(for: name) else {
@@ -77,9 +80,10 @@ extension KeyboardShortcuts {
 			self = shortcut
 		}
 
+
+
 		/**
 		Initialize from a key code number and modifier code.
-
 		You most likely don't need this.
 		*/
 		public init(carbonKeyCode: Int, carbonModifiers: Int = 0) {
@@ -105,49 +109,48 @@ extension KeyboardShortcuts.Shortcut {
 	Check whether the keyboard shortcut is disallowed.
 	*/
 	var isDisallowed: Bool {
-		let osVersion = ProcessInfo.processInfo.operatingSystemVersion
-
-		guard
-			osVersion.majorVersion == 15,
-			osVersion.minorVersion == 0 || osVersion.minorVersion == 1,
-			Constants.isSandboxed
-		else {
-			return false
-		}
-
-		if !modifiers.contains(.option) {
-			return false // Allowed if Option is not involved
-		}
-
-		// If Option is present, ensure there's at least one modifier other than Option and Shift
-		let otherModifiers: NSEvent.ModifierFlags = [.command, .control, .function, .capsLock]
-		return modifiers.isDisjoint(with: otherModifiers)
+		false
 	}
 
 	/**
-	Check whether the keyboard shortcut is already taken by the system.
+	Check whether the keyboard shortcut is already taken by the system or the app's main menu.
 	*/
-	var isTakenBySystem: Bool {
-		guard self != Self(.f12, modifiers: []) else {
+	@MainActor
+	var isTaken: Bool {
+		if
+			let key,
+			key == .f12,
+			modifiers.isEmpty
+		{
 			return false
 		}
 
-		return Self.system.contains(self)
+		if Self.system.contains(self) {
+			return true
+		}
+
+		if takenByMainMenu != nil {
+			return true
+		}
+
+		return false
 	}
 }
 
+// MARK: - Menu Bar Conflict Resolution
 extension KeyboardShortcuts.Shortcut {
 	/**
 	Recursively finds a menu item in the given menu that has a matching key equivalent and modifier.
 	*/
 	@MainActor
-	func menuItemWithMatchingShortcut(in menu: NSMenu) -> NSMenuItem? {
+	private func menuItemWithMatchingShortcut(in menu: NSMenu) -> NSMenuItem? {
 		for item in menu.items {
+			// AppKit replaces `Delete` with `Backspace` in menus.
 			var keyEquivalent = item.keyEquivalent
 			var keyEquivalentModifierMask = item.keyEquivalentModifierMask
 
 			if
-				modifiers.contains(.shift),
+				nsEventModifiers.contains(.shift),
 				keyEquivalent.lowercased() != keyEquivalent
 			{
 				keyEquivalent = keyEquivalent.lowercased()
@@ -155,8 +158,8 @@ extension KeyboardShortcuts.Shortcut {
 			}
 
 			if
-				nsMenuItemKeyEquivalent == keyEquivalent, // Note `nil != ""`
-				modifiers == keyEquivalentModifierMask
+				nsMenuItemKeyEquivalent == keyEquivalent,
+				nsEventModifiers == keyEquivalentModifierMask
 			{
 				return item
 			}
@@ -177,7 +180,9 @@ extension KeyboardShortcuts.Shortcut {
 	*/
 	@MainActor
 	var takenByMainMenu: NSMenuItem? {
-		guard let mainMenu = NSApp.mainMenu else {
+		guard
+			let mainMenu = NSApp.mainMenu
+		else {
 			return nil
 		}
 
@@ -185,11 +190,7 @@ extension KeyboardShortcuts.Shortcut {
 	}
 }
 
-/*
-An enumeration of special keys requiring specific handling when used with `RecorderCocoa`, AppKit’s `NSMenuItem`, and SwiftUI’s `.keyboardShortcut(_:modifiers:)`.  
 
-Using an enumeration ensures all cases are exhaustively addressed in all three contexts, providing compile-time safety and reducing the risk of unhandled keys.
-*/
 private enum SpecialKey {
 	case `return`
 	case delete
@@ -320,7 +321,7 @@ extension SpecialKey {
 		case .home:
 			"↖"
 		case .space:
-			"space_key".localized.capitalized // This matches what macOS uses.
+			"space_key".localized.capitalized
 		case .tab:
 			"⇥"
 		case .pageUp:
@@ -375,8 +376,6 @@ extension SpecialKey {
 			"F19"
 		case .f20:
 			"F20"
-
-		// Representations for numeric keypad keys with   ⃣  Unicode U+20e3 'COMBINING ENCLOSING KEYCAP'
 		case .keypad0:
 			"0\u{20e3}"
 		case .keypad1:
@@ -397,17 +396,14 @@ extension SpecialKey {
 			"8\u{20e3}"
 		case .keypad9:
 			"9\u{20e3}"
-		// There's "⌧“ 'X In A Rectangle Box' (U+2327), "☒" 'Ballot Box with X' (U+2612), "×" 'Multiplication Sign' (U+00d7), "⨯" 'Vector or Cross Product' (U+2a2f), or a plain small x. All combined symbols appear bigger.
 		case .keypadClear:
-			"☒\u{20e3}" // The combined symbol appears bigger than the other combined 'keycaps'
-		// TODO: Respect locale decimal separator ("." or ",")
+			"☒\u{20e3}"
 		case .keypadDecimal:
 			".\u{20e3}"
 		case .keypadDivide:
 			"/\u{20e3}"
-		// "⏎" 'Return Symbol' (U+23CE) but "↩" 'Leftwards Arrow with Hook' (U+00d7) seems to be more common on macOS.
 		case .keypadEnter:
-			"↩\u{20e3}" // The combined symbol appears bigger than the other combined 'keycaps'
+			"↩\u{20e3}"
 		case .keypadEquals:
 			"=\u{20e3}"
 		case .keypadMinus:
@@ -419,154 +415,38 @@ extension SpecialKey {
 		}
 	}
 
-	@available(macOS 11.0, *)
-	fileprivate var swiftUIKeyEquivalent: SwiftUI.KeyEquivalent? {
-		switch self {
-		case .return:
-			.return
-		case .delete:
-			.delete
-		case .deleteForward:
-			.deleteForward
-		case .end:
-			.end
-		case .escape:
-			.escape
-		case .help:
-			KeyEquivalent(unicodeScalarValue: NSHelpFunctionKey)
-		case .home:
-			.home
-		case .space:
-			.space
-		case .tab:
-			.tab
-		case .pageUp:
-			.pageUp
-		case .pageDown:
-			.pageDown
-		case .upArrow:
-			.upArrow
-		case .rightArrow:
-			.rightArrow
-		case .downArrow:
-			.downArrow
-		case .leftArrow:
-			.leftArrow
-		case .f1:
-			KeyEquivalent(unicodeScalarValue: NSF1FunctionKey)
-		case .f2:
-			KeyEquivalent(unicodeScalarValue: NSF2FunctionKey)
-		case .f3:
-			KeyEquivalent(unicodeScalarValue: NSF3FunctionKey)
-		case .f4:
-			KeyEquivalent(unicodeScalarValue: NSF4FunctionKey)
-		case .f5:
-			KeyEquivalent(unicodeScalarValue: NSF5FunctionKey)
-		case .f6:
-			KeyEquivalent(unicodeScalarValue: NSF6FunctionKey)
-		case .f7:
-			KeyEquivalent(unicodeScalarValue: NSF7FunctionKey)
-		case .f8:
-			KeyEquivalent(unicodeScalarValue: NSF8FunctionKey)
-		case .f9:
-			KeyEquivalent(unicodeScalarValue: NSF9FunctionKey)
-		case .f10:
-			KeyEquivalent(unicodeScalarValue: NSF10FunctionKey)
-		case .f11:
-			KeyEquivalent(unicodeScalarValue: NSF11FunctionKey)
-		case .f12:
-			KeyEquivalent(unicodeScalarValue: NSF12FunctionKey)
-		case .f13:
-			KeyEquivalent(unicodeScalarValue: NSF13FunctionKey)
-		case .f14:
-			KeyEquivalent(unicodeScalarValue: NSF14FunctionKey)
-		case .f15:
-			KeyEquivalent(unicodeScalarValue: NSF15FunctionKey)
-		case .f16:
-			KeyEquivalent(unicodeScalarValue: NSF16FunctionKey)
-		case .f17:
-			KeyEquivalent(unicodeScalarValue: NSF17FunctionKey)
-		case .f18:
-			KeyEquivalent(unicodeScalarValue: NSF18FunctionKey)
-		case .f19:
-			KeyEquivalent(unicodeScalarValue: NSF19FunctionKey)
-		case .f20:
-			KeyEquivalent(unicodeScalarValue: NSF20FunctionKey)
-		// Neither the " ⃣" enclosed characters (e.g. "7⃣") nor regular
-		// characters with the `.numpad` modifier produce `SwiftUI` buttons that
-		// will capture the only the number pad's keys (last checked: MacOS 14).
-		// Return `nil` to prevent definition of incorrect shortcuts.
-		case .keypad0:
-			nil
-		case .keypad1:
-			nil
-		case .keypad2:
-			nil
-		case .keypad3:
-			nil
-		case .keypad4:
-			nil
-		case .keypad5:
-			nil
-		case .keypad6:
-			nil
-		case .keypad7:
-			nil
-		case .keypad8:
-			nil
-		case .keypad9:
-			nil
-		case .keypadClear:
-			nil
-		case .keypadDecimal:
-			nil
-		case .keypadDivide:
-			nil
-		case .keypadEnter:
-			nil
-		case .keypadEquals:
-			nil
-		case .keypadMinus:
-			nil
-		case .keypadMultiply:
-			nil
-		case .keypadPlus:
-			nil
-		}
-	}
-
 	fileprivate var appKitMenuItemKeyEquivalent: Character? {
 		switch self {
 		case .return:
-			"↩"
+			"\r"
 		case .delete:
-			"⌫"
+			"\u{7f}"
 		case .deleteForward:
-			"⌦"
+			Character(unicodeScalarValue: 0xF728)
 		case .end:
-			"↘"
+			Character(unicodeScalarValue: 0xF72B)
 		case .escape:
-			"⎋"
+			"\u{1b}"
 		case .help:
-			"?⃝"
+			Character(unicodeScalarValue: 0xF746)
 		case .home:
-			"↖"
+			Character(unicodeScalarValue: 0xF729)
 		case .space:
-			"\u{0020}"
+			" "
 		case .tab:
-			"⇥"
+			"\t"
 		case .pageUp:
-			"⇞"
+			Character(unicodeScalarValue: 0xF72C)
 		case .pageDown:
-			"⇟"
+			Character(unicodeScalarValue: 0xF72D)
 		case .upArrow:
-			"↑"
+			Character(unicodeScalarValue: 0xF700)
 		case .rightArrow:
-			"→"
+			Character(unicodeScalarValue: 0xF703)
 		case .downArrow:
-			"↓"
+			Character(unicodeScalarValue: 0xF701)
 		case .leftArrow:
-			"←"
+			Character(unicodeScalarValue: 0xF702)
 		case .f1:
 			Character(unicodeScalarValue: NSF1FunctionKey)
 		case .f2:
@@ -607,49 +487,46 @@ extension SpecialKey {
 			Character(unicodeScalarValue: NSF19FunctionKey)
 		case .f20:
 			Character(unicodeScalarValue: NSF20FunctionKey)
-		// Neither the " ⃣" enclosed characters (e.g. "7⃣") nor regular
-		// characters with the `.numericPad` modifier produce a `MenuItem` that
-		// will capture the only the number pad's keys (last checked: MacOS 14).
-		// Return `nil` to prevent definition of incorrect shortcuts.
 		case .keypad0:
-			nil
+			"0"
 		case .keypad1:
-			nil
+			"1"
 		case .keypad2:
-			nil
+			"2"
 		case .keypad3:
-			nil
+			"3"
 		case .keypad4:
-			nil
+			"4"
 		case .keypad5:
-			nil
+			"5"
 		case .keypad6:
-			nil
+			"6"
 		case .keypad7:
-			nil
+			"7"
 		case .keypad8:
-			nil
+			"8"
 		case .keypad9:
-			nil
+			"9"
 		case .keypadClear:
-			nil
+			Character(unicodeScalarValue: 0xF739)
 		case .keypadDecimal:
-			nil
+			"."
 		case .keypadDivide:
-			nil
+			"/"
 		case .keypadEnter:
-			nil
+			"\r"
 		case .keypadEquals:
-			nil
+			"="
 		case .keypadMinus:
-			nil
+			"-"
 		case .keypadMultiply:
-			nil
+			"*"
 		case .keypadPlus:
-			nil
+			"+"
 		}
 	}
 }
+
 
 extension KeyboardShortcuts.Shortcut {
 	@MainActor // `TISGetInputSourceProperty` crashes if called on a non-main thread.
@@ -700,9 +577,7 @@ extension KeyboardShortcuts.Shortcut {
 
 	/**
 	Key equivalent string in `NSMenuItem` format.
-
 	This can be used to show the keyboard shortcut in a `NSMenuItem` by assigning it to `NSMenuItem#keyEquivalent`.
-
 	- Note: Don't forget to also pass ``Shortcut/modifiers`` to `NSMenuItem#keyEquivalentModifierMask`.
 	*/
 	@MainActor
@@ -715,7 +590,7 @@ extension KeyboardShortcuts.Shortcut {
 				return String(keyEquivalent)
 			}
 		} else if let character = keyToCharacter() {
-			return String(character)
+			return String(character).lowercased()
 		}
 
 		return nil
@@ -725,23 +600,21 @@ extension KeyboardShortcuts.Shortcut {
 extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 	/**
 	The string representation of the keyboard shortcut.
-
 	```swift
 	print(KeyboardShortcuts.Shortcut(.a, modifiers: [.command]))
 	//=> "⌘A"
 	```
 	*/
-
 	@MainActor
 	var presentableDescription: String {
 		if
 			let key,
 			let specialKey = keyToSpecialKeyMapping[key]
 		{
-			return modifiers.ks_symbolicRepresentation + specialKey.presentableDescription
+			return modifiers.description + specialKey.presentableDescription
 		}
 
-		return modifiers.ks_symbolicRepresentation + String(keyToCharacter() ?? "�").capitalized
+		return modifiers.description + (keyToCharacter().map(String.init)?.capitalized ?? "")
 	}
 
 	@MainActor
@@ -750,32 +623,3 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 		presentableDescription
 	}
 }
-
-extension KeyboardShortcuts.Shortcut {
-	@available(macOS 11, *)
-	@MainActor
-	var toSwiftUI: KeyboardShortcut? {
-		if
-			let key,
-			let specialKey = keyToSpecialKeyMapping[key]
-		{
-			if let keyEquivalent = specialKey.swiftUIKeyEquivalent {
-				if #available(macOS 12.0, *) {
-					// We do `localization: .custom)` since the KeyboardShortcuts shortcuts are not localized.
-					return KeyboardShortcut(keyEquivalent, modifiers: modifiers.toEventModifiers, localization: .custom)
-				} else {
-					return KeyboardShortcut(keyEquivalent, modifiers: modifiers.toEventModifiers)
-				}
-			}
-		} else if let character = keyToCharacter() {
-			if #available(macOS 12.0, *) {
-				return KeyboardShortcut(KeyEquivalent(character), modifiers: modifiers.toEventModifiers, localization: .custom)
-			} else {
-				return KeyboardShortcut(KeyEquivalent(character), modifiers: modifiers.toEventModifiers)
-			}
-		}
-
-		return nil
-	}
-}
-#endif

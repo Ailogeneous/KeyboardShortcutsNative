@@ -1,4 +1,5 @@
 #if os(macOS)
+import SwiftUI
 import Carbon.HIToolbox
 
 extension KeyboardShortcuts {
@@ -158,6 +159,80 @@ extension KeyboardShortcuts {
 		private init(_ value: Int) {
 			self.init(rawValue: value)
 		}
+
+		/**
+		Create a `Key` from a key press.
+		*/
+		public init?(keyPress: SwiftUI.KeyPress) {
+			// Handle character keys
+			if let character = keyPress.characters.first {
+				let uppercasedCharacter = String(character).uppercased()
+				switch uppercasedCharacter {
+				case "A": self = .a
+				case "B": self = .b
+				case "C": self = .c
+				case "D": self = .d
+				case "E": self = .e
+				case "F": self = .f
+				case "G": self = .g
+				case "H": self = .h
+				case "I": self = .i
+				case "J": self = .j
+				case "K": self = .k
+				case "L": self = .l
+				case "M": self = .m
+				case "N": self = .n
+				case "O": self = .o
+				case "P": self = .p
+				case "Q": self = .q
+				case "R": self = .r
+				case "S": self = .s
+				case "T": self = .t
+				case "U": self = .u
+				case "V": self = .v
+				case "W": self = .w
+				case "X": self = .x
+				case "Y": self = .y
+				case "Z": self = .z
+				case "0": self = .zero
+				case "1": self = .one
+				case "2": self = .two
+				case "3": self = .three
+				case "4": self = .four
+				case "5": self = .five
+				case "6": self = .six
+				case "7": self = .seven
+				case "8": self = .eight
+				case "9": self = .nine
+				default: return nil
+				}
+				return
+			}
+			
+			// Handle special keys
+			switch keyPress.key {
+			case .space:
+				self = .space
+			case .tab:
+				self = .tab
+			case .`return`:
+				self = .return
+			case .delete:
+				self = .delete
+			case .escape:
+				self = .escape
+			case .upArrow:
+				self = .upArrow
+			case .downArrow:
+				self = .downArrow
+			case .leftArrow:
+				self = .leftArrow
+			case .rightArrow:
+				self = .rightArrow
+			default:
+				return nil
+			}
+		}
 	}
 }
 
@@ -192,5 +267,18 @@ extension KeyboardShortcuts.Key {
 	Returns true if the key is a function key. For example, `F1`.
 	*/
 	var isFunctionKey: Bool { Self.functionKeys.contains(self) }
+
+	/**
+	Returns true if the key is a special key.
+	*/
+	var isSpecialKey: Bool {
+		switch self {
+		case .upArrow, .downArrow, .leftArrow, .rightArrow, .escape, .delete, .tab, .space, .return,
+			 .home, .end, .pageUp, .pageDown:
+			return true
+		default:
+			return isFunctionKey
+		}
+	}
 }
 #endif
