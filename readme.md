@@ -11,7 +11,9 @@ This package lets you add support for user-customizable global keyboard shortcut
 
 I'm happy to accept more configurability and features. PRs welcome! What you see here is just what I needed for my own apps.
 
-<img src="https://github.com/sindresorhus/KeyboardShortcuts/raw/main/screenshot.png" width="532">
+<img src="ScreenshotExample.png" width="532">
+<img src="ScreenshotConflict.png" width="532">
+<img src="ScreenshotEdit.png" width="532">
 
 ## Requirements
 
