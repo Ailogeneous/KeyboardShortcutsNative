@@ -4,6 +4,8 @@
 	<br>
 </div>
 
+|| ⚠️ Not finished, and will also not be maintained in the future. 🚧 ||
+
 This is a Native-Styled Fork of KeyboardShortcuts. In order for the selection highlight to function properly please be sure to add a color set to AccentColor in your asset catalog.
 
 
