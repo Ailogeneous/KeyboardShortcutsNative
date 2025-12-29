@@ -6,7 +6,7 @@ extension KeyboardShortcuts.Name {
 	static let testShortcut1 = Self("testShortcut")
 }
 
-private struct DoubleShortcut: View {
+private struct KeyboardShortcut: View {
 	@State private var isPressed = false
 
 	var body: some View {
@@ -31,7 +31,7 @@ private struct DoubleShortcut: View {
 struct MainScreen: View {
 	var body: some View {
 		VStack {
-			DoubleShortcut()
+			KeyboardShortcut()
 		}
 		.frame(width: 400, height: 320)
 	}
