@@ -426,6 +426,55 @@ public enum KeyboardShortcuts {
 }
 
 extension KeyboardShortcuts {
+	/**
+	Add a handler for when the user presses the keyboard shortcut for the given name.
+
+	You can register multiple handlers.
+
+	You can safely call this even if the user has not yet set a keyboard shortcut. It will just be inactive until they do.
+
+	```swift
+	import SwiftUI
+	import KeyboardShortcuts
+
+	@main
+	struct YourApp: App {
+		var body: some Scene {
+			WindowGroup {
+				ContentView()
+					.onAppear {
+						KeyboardShortcuts.onKeyDown(for: .toggleUnicornMode) {
+							print("`toggleUnicornMode` shortcut was pressed")
+						}
+					}
+			}
+		}
+	}
+	```
+
+	- Note: This method is not affected by `.removeAllHandlers()`.
+	*/
+	public static func onKeyDown(for name: Name, action: @escaping () -> Void) {
+		legacyKeyDownHandlers[name, default: []].append(action)
+		registerShortcutIfNeeded(for: name)
+	}
+
+	/**
+	Add a handler for when the user releases the keyboard shortcut for the given name.
+
+	You can register multiple handlers.
+
+	You can safely call this even if the user has not yet set a keyboard shortcut. It will just be inactive until they do.
+
+	- Note: This method is not affected by `.removeAllHandlers()`.
+	*/
+	public static func onKeyUp(for name: Name, action: @escaping () -> Void) {
+		legacyKeyUpHandlers[name, default: []].append(action)
+		registerShortcutIfNeeded(for: name)
+	}
+}
+
+extension KeyboardShortcuts {
 	public enum EventType: Sendable {
 		case keyDown
 		case keyUp
