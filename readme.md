@@ -4,8 +4,7 @@
 	<br>
 </div>
 
-|| This is a Native-Styled Fork of the following package: ||
-|| Please see MainScreen.swift for an example || 
+|| !!This is a Native-Styled Fork of KeyboardShortcuts. In order for the selection highlight to function properly please be sure to add a color set to AccentColor in your asset catalog!! || 
 
 This package lets you add support for user-customizable global keyboard shortcuts to your macOS app in minutes. It's fully sandboxed and Mac App Store compatible. And it's used in production by [Dato](https://sindresorhus.com/dato), [Jiffy](https://sindresorhus.com/jiffy), [Plash](https://github.com/sindresorhus/Plash), and [Lungo](https://sindresorhus.com/lungo).
 
