@@ -27,6 +27,8 @@ Add `https://github.com/Ailogeneous/KeyboardShortcutsNative` in the [“Swift Pa
 
 ## Usage
 
+Please look at https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/Example/KeyboardShortcutsExample/MainScreen.swift for the updated example. 
+
 First, register a name for the keyboard shortcut.
 
 `Constants.swift`
