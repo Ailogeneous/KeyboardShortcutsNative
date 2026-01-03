@@ -37,7 +37,7 @@ public struct KeyboardShortcutRecorder: View {
 				.frame(width: 14, height: 14)
 				.contrast(!userDesiredIsEnabled && colorScheme != .dark ? 1.4 : 1)
 				.padding(.leading)
-				.padding(.trailing, 4)
+				.padding(.trailing, 6)
 				.overlay {
 					if colorScheme != .dark && !userDesiredIsEnabled || !isAppActive && userDesiredIsEnabled && colorScheme != .dark {
 						RoundedRectangle(cornerRadius: 3.5)
