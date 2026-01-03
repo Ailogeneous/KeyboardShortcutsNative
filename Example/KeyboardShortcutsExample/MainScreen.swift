@@ -19,20 +19,39 @@ struct MainScreen: View {
 				label: "Test Shortcut",
 				focused: $selectedField
 			)
-			.background(Color(nsColor: .alternatingContentBackgroundColors[1]).opacity(0.75).padding(.horizontal, -12))
+			.background {
+				   if colorScheme == .light {
+					   Color(nsColor: .alternatingContentBackgroundColors[1])
+						   .opacity(0.75)
+						   .padding(.horizontal, -12)
+				   }
+			   }
 			
 			KeyboardShortcutRecorder(
 				for: .testShortcut2,
 				label: "Test Shortcut 2",
 				focused: $selectedField
 			)
+			.background {
+				   if colorScheme == .dark {
+					   Color(nsColor: .alternatingContentBackgroundColors[1])
+						   .opacity(0.75)
+						   .padding(.horizontal, -12)
+				   }
+			   }
 
 			KeyboardShortcutRecorder(
 				for: .testShortcut3,
 				label: "Test Shortcut 3",
 				focused: $selectedField
 			)
-			.background(Color(nsColor: .alternatingContentBackgroundColors[1]).opacity(0.75).padding(.horizontal, -12))
+			.background {
+				   if colorScheme == .light {
+					   Color(nsColor: .alternatingContentBackgroundColors[1])
+						   .opacity(0.75)
+						   .padding(.horizontal, -12)
+				   }
+			   }
 		}
 		.background(.regularMaterial)
 		.clipShape(RoundedRectangle(cornerRadius: 6))
