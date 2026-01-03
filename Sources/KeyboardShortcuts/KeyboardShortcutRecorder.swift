@@ -50,7 +50,7 @@ public struct KeyboardShortcutRecorder: View {
 
 				Text(label)
 					.foregroundColor(isFocused && isAppActive ? .white : .primary)
-					.font(.system(size: 12.5, weight: .medium))
+					.font(.system(size: 12, weight: .medium))
 				Spacer()
 
 				ZStack {
@@ -59,7 +59,7 @@ public struct KeyboardShortcutRecorder: View {
 							.focused($isTextFieldFocused)
 							.textFieldStyle(.plain)
 							.multilineTextAlignment(.trailing)
-							.frame(width: 100, height: 20, alignment: .trailing)
+							.frame(width: 100, height: 18, alignment: .trailing)
 							.foregroundStyle(.clear)
 							.tint(.blue)
 							.onKeyPress { keyPress in
@@ -68,14 +68,14 @@ public struct KeyboardShortcutRecorder: View {
 							}
 							.padding(.trailing, 4)
 							.background(Rectangle().fill(Color.white))
-							.frame(width: 100, height: 20)
+							.frame(width: 100, height: 18)
 					} else {
 						HStack(spacing: 4) {
 							Text(currentShortcut?.description ?? "none")
-								.font(.system(size: 12.5, weight: .medium))
+								.font(.system(size: 12, weight: .medium))
 								.foregroundColor(isFocused && isAppActive ? .white : .primary)
 						}
-						.frame(width: 100, height: 20, alignment: .trailing)
+						.frame(width: 100, height: 18, alignment: .trailing)
 					}
 				}
 				.contentShape(Rectangle())
@@ -94,7 +94,7 @@ public struct KeyboardShortcutRecorder: View {
 			}
 			.padding(.horizontal, 12)
 			.padding(.vertical, 4)
-			.frame(minWidth: 300, maxWidth: .infinity, minHeight: 2, maxHeight: .infinity, alignment: .center)
+			.frame(minWidth: 300, maxWidth: .infinity, minHeight: 18, maxHeight: .infinity, alignment: .center)
 			.background(
 				Group {
 					if isFocused {
