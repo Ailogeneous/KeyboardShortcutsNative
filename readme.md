@@ -4,15 +4,14 @@
 	<br>
 </div>
 
-|| ⚠️ Not finished, and will also not be maintained in the future. 🚧 ||
-
-This is a Native-Styled Fork of KeyboardShortcuts.
+This is a Native-Styled Fork of KeyboardShortcuts. Skip to link in Usage section for how to implement this item as seen in thee macOS Keyboard Shortcuts settings window.
 
 
 This package lets you add support for user-customizable global keyboard shortcuts to your macOS app in minutes. It's fully sandboxed and Mac App Store compatible. And it's used in production by [Dato](https://sindresorhus.com/dato), [Jiffy](https://sindresorhus.com/jiffy), [Plash](https://github.com/sindresorhus/Plash), and [Lungo](https://sindresorhus.com/lungo).
 
 I'm happy to accept more configurability and features. PRs welcome! What you see here is just what I needed for my own apps.
 
+<img src="Screenshot.png" width="532">
 <img src="ScreenshotExample.png" width="532">
 <img src="ScreenshotConflict.png" width="532">
 <img src="ScreenshotEdit.png" width="532">
