@@ -59,7 +59,7 @@ public struct KeyboardShortcutRecorder: View {
 							.focused($isTextFieldFocused)
 							.textFieldStyle(.plain)
 							.multilineTextAlignment(.trailing)
-							.frame(width: 100, height: 22, alignment: .trailing)
+							.frame(width: 100, height: 20, alignment: .trailing)
 							.foregroundStyle(.clear)
 							.tint(.blue)
 							.onKeyPress { keyPress in
@@ -75,7 +75,7 @@ public struct KeyboardShortcutRecorder: View {
 								.font(.system(size: 12.5, weight: .medium))
 								.foregroundColor(isFocused && isAppActive ? .white : .primary)
 						}
-						.frame(width: 100, height: 22, alignment: .trailing)
+						.frame(width: 100, height: 20, alignment: .trailing)
 					}
 				}
 				.contentShape(Rectangle())
@@ -94,7 +94,7 @@ public struct KeyboardShortcutRecorder: View {
 			}
 			.padding(.horizontal, 12)
 			.padding(.vertical, 4)
-			.frame(minWidth: 300, maxWidth: .infinity, minHeight: 24, maxHeight: .infinity, alignment: .center)
+			.frame(minWidth: 300, maxWidth: .infinity, minHeight: 20, maxHeight: .infinity, alignment: .center)
 			.background(
 				Group {
 					if isFocused {
