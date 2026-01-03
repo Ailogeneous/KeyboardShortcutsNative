@@ -45,40 +45,40 @@ struct MainScreen: View {
 		.task {
 			for await event in KeyboardShortcuts.events(for: .testShortcut1) {
 				switch event {
-					   case .keyDown:
-						   print("Shortcut key pressed down")
-						   // Perform action when key is pressed
-						   
-					   case .keyUp:
-						   print("Shortcut key released")
-						   // Perform action when key is released
-					   }
+				   case .keyDown:
+					   print("Shortcut key pressed down")
+					   // Perform action when key is pressed
+					   
+				   case .keyUp:
+					   print("Shortcut key released")
+					   // Perform action when key is released
+				   }
 			}
 		}
 		.task {
 			for await event in KeyboardShortcuts.events(for: .testShortcut2) {
 				switch event {
-					   case .keyDown:
-						   print("Shortcut key 2 pressed down")
-						   // Perform action when key 2 is pressed
-						   
-					   case .keyUp:
-						   print("Shortcut key 2 released")
-						   // Perform action when key 2 is released
-					   }
+				   case .keyDown:
+					   print("Shortcut key 2 pressed down")
+					   // Perform action when key 2 is pressed
+					   
+				   case .keyUp:
+					   print("Shortcut key 2 released")
+					   // Perform action when key 2 is released
+				   }
 			}
 		}
 		.task {
 			for await event in KeyboardShortcuts.events(for: .testShortcut3) {
 				switch event {
-					   case .keyDown:
-						   print("Shortcut key 3 pressed down")
-						   // Perform action when key 3 is pressed
-						   
-					   case .keyUp:
-						   print("Shortcut key 3 released")
-						   // Perform action when key 3 is released
-					   }
+				   case .keyDown:
+					   print("Shortcut key 3 pressed down")
+					   // Perform action when key 3 is pressed
+					   
+				   case .keyUp:
+					   print("Shortcut key 3 released")
+					   // Perform action when key 3 is released
+				   }
 			}
 		}
     }
