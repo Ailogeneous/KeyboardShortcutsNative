@@ -5,118 +5,145 @@ public struct KeyboardShortcutRecorder: View {
 	public let shortcutName: KeyboardShortcuts.Name
 	public let label: String
 	public let onChange: ((KeyboardShortcuts.Shortcut?) -> Void)?
+	@Binding public var focused: KeyboardShortcuts.Name?
 
 	@State private var currentShortcut: KeyboardShortcuts.Shortcut?
-	@State private var isHighlighted = false
-	@FocusState private var isRecording: Bool
+	private var isFocused: Bool { shortcutName == focused }
+	@State private var isRecording = false
+	@FocusState private var isTextFieldFocused: Bool
 	@State private var isConflicting = false
 	@State private var conflictReason = ""
 	@State private var userDesiredIsEnabled: Bool = true
+	@State private var isAppActive: Bool = NSApp.isActive
+	@Environment(\.colorScheme) var colorScheme
 
-	public init(for name: KeyboardShortcuts.Name, label: String, onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil) {
+	public init(
+		for name: KeyboardShortcuts.Name,
+		label: String,
+		focused: Binding<KeyboardShortcuts.Name?>,
+		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
+	) {
 		self.shortcutName = name
 		self.label = label
+		self._focused = focused
 		self.onChange = onChange
 	}
 
 	public var body: some View {
+		
 		HStack {
-			Toggle("", isOn: $userDesiredIsEnabled)
-				.labelsHidden()
-				.toggleStyle(.checkbox)
-				.focusable(false)
-				.focusEffectDisabled()
+			
+			AppKitCheckbox(isOn: $userDesiredIsEnabled, isAppActive: isAppActive)
+				.frame(width: 14, height: 14)
+				.contrast(!userDesiredIsEnabled && colorScheme != .dark ? 1.4 : 1)
 				.padding(.leading)
 				.padding(.trailing, 4)
-
-			Text(label)
-				.foregroundColor(isHighlighted ? .white : .primary)
-			Spacer()
-
-			ZStack {
-				ZStack(alignment: .trailing) {
-					TextField("", text: .constant(""))
-						.textFieldStyle(.plain)
-						.multilineTextAlignment(.trailing)
-						.frame(width: 100, height: 22, alignment: .trailing)
-						.foregroundStyle(.clear)
-						.tint(.blue)
-						.focused($isRecording)
-						.focusEffectDisabled()
-						.onKeyPress { keyPress in
-							handleKeyPress(keyPress)
-							return .handled
-						}
-						.padding(.trailing, 4)
-				}
-				.background(Rectangle().fill(Color.white))
-				.frame(width: 100, height: 22)
-				.opacity(isRecording ? 1 : 0)
-				.allowsHitTesting(isRecording)
-
-				if !isRecording {
-					HStack(spacing: 4) {
-						Text(currentShortcut?.description ?? "none")
-							.font(.system(size: 13, weight: .medium))
-							.foregroundColor(isHighlighted ? .white : .primary)
+				.overlay {
+					if colorScheme != .dark && !userDesiredIsEnabled || !isAppActive && userDesiredIsEnabled && colorScheme != .dark {
+						RoundedRectangle(cornerRadius: 3.5)
+							.strokeBorder(Color(nsColor: .tertiaryLabelColor), lineWidth: 1)
+							.frame(width: 14, height: 14)
+							.offset(x : 6)
+							
 					}
-					.frame(width: 100, height: 22, alignment: .trailing)
-					.opacity(isRecording ? 0 : 1)
-					.allowsHitTesting(!isRecording)
+				}
+
+				Text(label)
+					.foregroundColor(isFocused && isAppActive ? .white : .primary)
+				Spacer()
+
+				ZStack {
+					if isRecording {
+						TextField("", text: .constant(""))
+							.focused($isTextFieldFocused)
+							.textFieldStyle(.plain)
+							.multilineTextAlignment(.trailing)
+							.frame(width: 100, height: 22, alignment: .trailing)
+							.foregroundStyle(.clear)
+							.tint(.blue)
+							.onKeyPress { keyPress in
+								handleKeyPress(keyPress)
+								return .handled
+							}
+							.padding(.trailing, 4)
+							.background(Rectangle().fill(Color.white))
+							.frame(width: 100, height: 22)
+					} else {
+						HStack(spacing: 4) {
+							Text(currentShortcut?.description ?? "none")
+								.font(.system(size: 13, weight: .medium))
+								.foregroundColor(isFocused && isAppActive ? .white : .primary)
+						}
+						.frame(width: 100, height: 22, alignment: .trailing)
+					}
+				}
+				.contentShape(Rectangle())
+				.onTapGesture {
+					if isFocused {
+						isRecording = true
+					} else {
+						focused = shortcutName
+					}
+				}
+				if isConflicting && userDesiredIsEnabled {
+					Image(systemName: "exclamationmark.triangle")
+						.foregroundColor(isFocused ? .white : .secondary)
+						.help(conflictReason)
 				}
 			}
+			.padding(.horizontal, 12)
+			.padding(.vertical, 4)
+			.frame(minWidth: 300, maxWidth: .infinity, minHeight: 24, maxHeight: .infinity, alignment: .center)
+			.background(
+				Group {
+					if isFocused {
+						Rectangle()
+							.fill(isAppActive ? Color(nsColor: .selectedContentBackgroundColor) : Color.secondary.opacity(0.2))
+							.padding(.horizontal, -10)
+					}
+				}
+			)
 			.contentShape(Rectangle())
 			.onTapGesture {
-				if self.isHighlighted {
-					self.isRecording = true
-				} else {
-					self.isHighlighted = true
-				}
+				focused = shortcutName
 			}
-			if isConflicting && userDesiredIsEnabled {
-				Image(systemName: "exclamationmark.triangle")
-					.foregroundColor(isHighlighted ? .white : .secondary)
-					.help(conflictReason)
+			.onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+				isAppActive = true
 			}
-		}
-		.padding(.horizontal, 12)
-		.padding(.vertical, 4)
-		.frame(minWidth: 100, maxWidth: .infinity)
-		.background(isHighlighted ? Color("AccentColor") : .clear)
-		.contentShape(Rectangle())
-		.onTapGesture {
-			isHighlighted = true
-		}
+			.onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
+				isAppActive = false
+			}
 		.onAppear {
 			currentShortcut = KeyboardShortcuts.getShortcut(for: shortcutName)
-			KeyboardShortcuts.isPaused = isRecording
 			updateConflictStatus(for: currentShortcut)
-		}
-		.onChange(of: isRecording) { _, newValue in
-			KeyboardShortcuts.isPaused = newValue
-			if !newValue {
-				isHighlighted = false
-			}
 		}
 		.onChange(of: currentShortcut) { _, newValue in
 			KeyboardShortcuts.setShortcut(newValue, for: shortcutName)
 			updateConflictStatus(for: newValue)
 			onChange?(newValue)
 		}
-		.focusEffectDisabled()
+		.onChange(of: isRecording) { _, newValue in
+			KeyboardShortcuts.isPaused = newValue
+			isTextFieldFocused = newValue
+		}
+		.onChange(of: focused) { _, newValue in
+			if newValue != shortcutName {
+				isRecording = false
+			}
+		}
 	}
 
 	private func handleKeyPress(_ keyPress: SwiftUI.KeyPress) {
 		if keyPress.key == .escape {
 			isRecording = false
-			isHighlighted = false
+			focused = nil
 			return
 		}
 
 		if keyPress.key == .delete || keyPress.key == .deleteForward {
 			currentShortcut = nil
 			isRecording = false
-			isHighlighted = false
+			focused = nil
 			return
 		}
 
@@ -131,7 +158,7 @@ public struct KeyboardShortcutRecorder: View {
 		
 		currentShortcut = newShortcut
 		isRecording = false
-		isHighlighted = false
+		focused = nil
 	}
 
 	private func updateConflictStatus(for shortcut: KeyboardShortcuts.Shortcut?) {
@@ -154,4 +181,67 @@ public struct KeyboardShortcutRecorder: View {
 			}
 		}
 	}
+}
+
+struct AppKitCheckbox: NSViewRepresentable {
+	@Binding var isOn: Bool
+	var isAppActive: Bool
+	@Environment(\.colorScheme) var colorScheme
+	
+	func makeNSView(context: Context) -> NSButton {
+		let checkbox = NSButton()
+		checkbox.setButtonType(.switch)
+		checkbox.title = ""
+		checkbox.target = context.coordinator
+		checkbox.action = #selector(Coordinator.toggled)
+		checkbox.focusRingType = .none
+		checkbox.wantsLayer = true
+		checkbox.contentTintColor = .controlAccentColor
+		return checkbox
+	}
+	
+	func updateNSView(_ nsView: NSButton, context: Context) {
+		nsView.state = isOn ? .on : .off
+		let isDarkMode = NSApp.effectiveAppearance.isDarkMode
+		
+		if isAppActive {
+			nsView.contentTintColor = nil
+		} else {
+			if !isOn && !isDarkMode {
+				nsView.contentTintColor = nil 
+			} else {
+				nsView.contentTintColor = isDarkMode ? .white : .black
+			}
+		}
+	
+		nsView.layer?.filters = nil
+		
+		if !isAppActive && isOn && !isDarkMode {
+			let invertFilter = CIFilter(name: "CIColorInvert")
+			invertFilter?.setDefaults()
+			nsView.layer?.filters = [invertFilter].compactMap { $0 }
+		}
+	}
+	
+	func makeCoordinator() -> Coordinator {
+		Coordinator(isOn: $isOn)
+	}
+	
+	class Coordinator {
+		@Binding var isOn: Bool
+		
+		init(isOn: Binding<Bool>) {
+			_isOn = isOn
+		}
+		
+		@objc func toggled(_ sender: NSButton) {
+			isOn = sender.state == .on
+		}
+	}
+}
+
+extension NSAppearance {
+    var isDarkMode: Bool {
+		return bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+    }
 }
