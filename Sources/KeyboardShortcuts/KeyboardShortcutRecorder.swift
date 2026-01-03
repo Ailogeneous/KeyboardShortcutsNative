@@ -68,7 +68,7 @@ public struct KeyboardShortcutRecorder: View {
 							}
 							.padding(.trailing, 4)
 							.background(Rectangle().fill(Color.white))
-							.frame(width: 100, height: 22)
+							.frame(width: 100, height: 20)
 					} else {
 						HStack(spacing: 4) {
 							Text(currentShortcut?.description ?? "none")
@@ -94,7 +94,7 @@ public struct KeyboardShortcutRecorder: View {
 			}
 			.padding(.horizontal, 12)
 			.padding(.vertical, 4)
-			.frame(minWidth: 300, maxWidth: .infinity, minHeight: 20, maxHeight: .infinity, alignment: .center)
+			.frame(minWidth: 300, maxWidth: .infinity, minHeight: 2, maxHeight: .infinity, alignment: .center)
 			.background(
 				Group {
 					if isFocused {
