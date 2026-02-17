@@ -50,7 +50,7 @@ public struct KeyboardShortcutRecorder: View {
 
 				Text(label)
 					.foregroundColor(isFocused && isAppActive ? .white : .primary)
-					.font(.system(size: 12, weight: .medium))
+					.font(.system(size: 12, weight: .regular))
 				Spacer()
 
 				ZStack {
@@ -72,7 +72,7 @@ public struct KeyboardShortcutRecorder: View {
 					} else {
 						HStack(spacing: 4) {
 							Text(currentShortcut?.description ?? "none")
-								.font(.system(size: 12, weight: .medium))
+								.font(.system(size: 12, weight: .regular))
 								.foregroundColor(isFocused && isAppActive ? .white : .primary)
 						}
 						.frame(width: 100, height: 18, alignment: .trailing)
