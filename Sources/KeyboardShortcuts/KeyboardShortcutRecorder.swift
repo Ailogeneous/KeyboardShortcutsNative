@@ -37,7 +37,7 @@ public struct KeyboardShortcutRecorder: View {
 				.frame(width: 14, height: 14)
 				.contrast(!userDesiredIsEnabled && colorScheme != .dark ? 1.4 : 1)
 				.padding(.leading)
-				.padding(.trailing, 6)
+				.padding(.trailing, 7)
 				.overlay {
 					if colorScheme != .dark && !userDesiredIsEnabled || !isAppActive && userDesiredIsEnabled && colorScheme != .dark {
 						RoundedRectangle(cornerRadius: 3.5)
@@ -72,7 +72,7 @@ public struct KeyboardShortcutRecorder: View {
 					} else {
 						HStack(spacing: 4) {
 							Text(currentShortcut?.description ?? "none")
-								.font(.system(size: 11, weight: .regular))
+								.font(.system(size: 10, weight: .regular))
 								.foregroundColor(isFocused && isAppActive ? .white : .secondary)
 						}
 						.frame(width: 100, height: 18, alignment: .trailing)
