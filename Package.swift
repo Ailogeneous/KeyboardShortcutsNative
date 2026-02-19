@@ -18,6 +18,11 @@ let package = Package(
 	targets: [
 		.target(
 			name: "KeyboardShortcuts",
+			dependencies: [],
+			path: "Sources/KeyboardShortcuts", // Ensure path is correct
+			resources: [
+				.process("Resources") // This line is required for local images
+			],
 			swiftSettings: [
 				.swiftLanguageMode(.v5)
 			]
