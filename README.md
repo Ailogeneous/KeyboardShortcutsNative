@@ -1,8 +1,8 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Ailogeneous/KeyboardShortcutsNative/main/logo-dark.png">
-  <img src="https://raw.githubusercontent.com/Ailogeneous/KeyboardShortcutsNative/main/logo-light.png" alt="KeyboardShortcuts Logo" width="1000">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Ailogeneous/KeyboardShortcutsNative/main/Resources/logo-dark.png">
+  <img src="https://raw.githubusercontent.com/Ailogeneous/KeyboardShortcutsNative/main/Resources/logo-light.png" alt="KeyboardShortcuts Logo" width="1000">
 </picture>
 
 <br>
@@ -15,10 +15,10 @@
 </div>
 
 ---
-![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/Screenshot.png)
-![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/ScreenshotExample.png)
-![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/ScreenshotConflict.png)
-![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/ScreenshotEdit.png)
+![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/Resources/Screenshot.png)
+![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main//Resources/ScreenshotExample.png)
+![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/Resources/ScreenshotConflict.png)
+![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/Resources/ScreenshotEdit.png)
 ___
 
 This package lets you add support for user-customizable global keyboard shortcuts to your macOS app in minutes. It's fully sandboxed and Mac App Store compatible.
