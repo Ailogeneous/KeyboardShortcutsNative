@@ -1,11 +1,15 @@
+[logo-light]: Resources/logo-light.png#gh-light-mode-only
+[logo-dark]: Resources/logo-dark.png#gh-dark-mode-only
+[Screenshot]:	Resources/Screenshot.png
+[ScreenshotExample]:	Resources/ScreenshotExample.png
+[ScreenshotConflict]:	Resources/ScreenshotConflict.png
+[ScreenshotEdit]:	Resources/ScreenshotEdit.png
+
+
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Ailogeneous/KeyboardShortcutsNative/main/Resources/logo-dark.png">
-  <img src="https://raw.githubusercontent.com/Ailogeneous/KeyboardShortcutsNative/main/Resources/logo-light.png" alt="KeyboardShortcuts Logo" width="1000">
-</picture>
-
-<br>
+![Logo light][logo-light]
+![Logo dark][logo-dark]
 
 <div align="center">	
 	
@@ -15,11 +19,10 @@
 </div>
 
 ---
-![Screenshot][image-1]
-
-![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main//Resources/ScreenshotExample.png)
-![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/Resources/ScreenshotConflict.png)
-![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/Resources/ScreenshotEdit.png)
+![Screenshot][Screenshot]
+![ScreenshotExample][ScreenshotExample]
+![ScreenshotConflict][ScreenshotConflict]
+![ScreenshotEdit][ScreenshotEdit]
 ___
 
 This package lets you add support for user-customizable global keyboard shortcuts to your macOS app in minutes. It's fully sandboxed and Mac App Store compatible.
@@ -277,5 +280,3 @@ No. However, there is nothing stopping you from using Swift Package Manager for 
 
 - [KeyboardShortcuts (upstream)](https://github.com/sindresorhus/KeyboardShortcuts)
 - [Example app in this fork](./Example/KeyboardShortcutsExample)
-
-[image-1]:	Resources/Screenshot.png
