@@ -1,17 +1,17 @@
 <div align="center">
-
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Ailogeneous/KeyboardShortcutsNative/main/logo-dark.png">
-  <img src="https://raw.githubusercontent.com/Ailogeneous/KeyboardShortcutsNative/main/logo-light.png" alt="KeyboardShortcuts Logo" width="500">
+  <source media="(prefers-color-scheme: dark)" srcset="logo-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="logo-light.png">
+  <!-- Xcode will likely only see and render this line -->
+  <img alt="KeyboardShortcuts logo" src="logo-light.png">
 </picture>
-
-**This is a native-styled fork of `KeyboardShortcuts`.**
-
-[Installation](#Install) • [Usage](#Usage) • [API](#API) • [Tips](#Tips)
-
+	
+**This is a native-styled fork of KeyboardShortcuts.**
+	
+[Installation](#install) • [Usage](#usage) • [API](#api) • [Tips](#tips)
 </div>
 
-If you want the full table-style recorder implementation shown in the screenshots, jump to the example link in **Usage**.
+---
 
 <img src="Screenshot.png" width="532">
 <img src="ScreenshotExample.png" width="532">
