@@ -1,12 +1,17 @@
 <div align="center">
-	<img width="900" src="https://github.com/sindresorhus/KeyboardShortcuts/raw/main/logo-light.png#gh-light-mode-only" alt="KeyboardShortcuts">
-	<img width="900" src="https://github.com/sindresorhus/KeyboardShortcuts/raw/main/logo-dark.png#gh-dark-mode-only" alt="KeyboardShortcuts">
-	<br>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Ailogeneous/KeyboardShortcutsNative/main/logo-dark.png">
+  <img src="https://raw.githubusercontent.com/Ailogeneous/KeyboardShortcutsNative/main/logo-light.png" alt="KeyboardShortcuts Logo" width="500">
+</picture>
+
+**This is a native-styled fork of `KeyboardShortcuts`.**
+
+[Installation](#Install) • [Usage](#Usage) • [API](#API) • [Tips](#Tips)
+
 </div>
 
-This is a Native-Styled Fork of KeyboardShortcuts. 
-
-Skip to link in Usage section for how to implement this item as seen in the macOS Keyboard Shortcuts settings window.
+If you want the full table-style recorder implementation shown in the screenshots, jump to the example link in **Usage**.
 
 <img src="Screenshot.png" width="532">
 <img src="ScreenshotExample.png" width="532">
@@ -15,9 +20,9 @@ Skip to link in Usage section for how to implement this item as seen in the macO
 
 ___
 
-This package lets you add support for user-customizable global keyboard shortcuts to your macOS app in minutes. It's fully sandboxed and Mac App Store compatible. And it's used in production by [Dato](https://sindresorhus.com/dato), [Jiffy](https://sindresorhus.com/jiffy), [Plash](https://github.com/sindresorhus/Plash), and [Lungo](https://sindresorhus.com/lungo).
+This package lets you add support for user-customizable global keyboard shortcuts to your macOS app in minutes. It's fully sandboxed and Mac App Store compatible.
 
-I'm happy to accept more configurability and features. PRs welcome! What you see here is just what I needed for my own apps.
+This fork focuses on a native-styled recorder UI and app-settings table behavior while keeping the core keyboard-shortcut APIs compatible with upstream usage.
 
 ## Requirements
 
@@ -29,7 +34,7 @@ Add `https://github.com/Ailogeneous/KeyboardShortcutsNative` in the [“Swift Pa
 
 ## Usage
 
-Please look at https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/Example/KeyboardShortcutsExample/MainScreen.swift for the updated example. 
+For a full, fork-aligned implementation, see: https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/Example/KeyboardShortcutsExample/MainScreen.swift
 
 First, register a name for the keyboard shortcut.
 
@@ -92,24 +97,20 @@ struct YourApp: App {
 	}
 }
 
-@MainActor
-@Observable
 final class AppState {
 	init() {
-		KeyboardShortcuts.onKeyUp(for: .toggleUnicornMode) { [self] in
-			isUnicornMode.toggle()
+		KeyboardShortcuts.onKeyUp(for: .toggleUnicornMode) {
+			print("toggleUnicornMode released")
 		}
 	}
 }
 ```
 
-*You can also listen to key down with `.onKeyDown()`*
+*You can also listen for key-down with `KeyboardShortcuts.onKeyDown(for:action:)`.*
 
-**That's all! ✨**
+**That's all.**
 
-You can find a complete example in the “Example” directory.
-
-You can also find a [real-world example](https://github.com/sindresorhus/Plash/blob/b348a62645a873abba8dc11ff0fb8fe423419411/Plash/PreferencesView.swift#L121-L130) in my Plash app.
+For a complete, fork-aligned implementation, use the example app in this repository: `Example/KeyboardShortcutsExample`.
 
 #### Cocoa
 
@@ -121,24 +122,50 @@ This package supports [localizations](/Sources/KeyboardShortcuts/Localization). 
 
 1. Fork the repo.
 2. Create a directory that has a name that uses an [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) language code and optional designators, followed by the `.lproj` suffix. [More here.](https://developer.apple.com/documentation/swift_packages/localizing_package_resources)
-3. Create a file named `Localizable.strings` under the new language directory and then copy the contents of `KeyboardShortcuts/Localization/en.lproj/Localizable.strings` to the new file that you just created.
+3. Create a file named `Localizable.strings` under the new language directory and then copy the contents of `Sources/KeyboardShortcuts/Localization/en.lproj/Localizable.strings` into it.
 4. Localize and make sure to review your localization multiple times. Check for typos.
 5. Try to find someone that speaks your language to review the translation.
 6. Submit a PR.
 
 ## API
 
-[See the API docs.](https://swiftpackageindex.com/sindresorhus/KeyboardShortcuts/documentation/keyboardshortcuts/keyboardshortcuts)
+The API surface stays close to upstream `KeyboardShortcuts`, with fork-specific recorder UI behavior.
+
+Most-used APIs:
+- `KeyboardShortcutRecorder(for:label:focused:onInteraction:onChange:)`
+- `KeyboardShortcuts.onKeyDown(for:action:)` / `KeyboardShortcuts.onKeyUp(for:action:)`
+- `KeyboardShortcuts.events(for:)` and `KeyboardShortcuts.events(_:for:)`
+- `KeyboardShortcuts.getShortcut(for:)` / `KeyboardShortcuts.setShortcut(_:for:)`
+- `KeyboardShortcuts.reset(_:)` / `KeyboardShortcuts.resetAll()`
+- `KeyboardShortcuts.enable(_:)` / `KeyboardShortcuts.disable(_:)` / `KeyboardShortcuts.isEnabled(for:)`
+
+Note: Hosted API docs on Swift Package Index currently point to upstream and may not reflect fork-specific UI behavior exactly.
 
 ## Tips
 
 #### Show a recorded keyboard shortcut in an `NSMenuItem`
 
-The `NSMenuItem` extension helper from upstream is not currently included in this fork.
+This fork does not include upstream's `NSMenuItem` helper extension, but you can wire it directly:
+
+```swift
+if let shortcut = KeyboardShortcuts.getShortcut(for: .toggleUnicornMode) {
+	var modifierMask = NSEvent.ModifierFlags()
+	if shortcut.modifiers.contains(.command) { modifierMask.insert(.command) }
+	if shortcut.modifiers.contains(.option) { modifierMask.insert(.option) }
+	if shortcut.modifiers.contains(.shift) { modifierMask.insert(.shift) }
+	if shortcut.modifiers.contains(.control) { modifierMask.insert(.control) }
+
+	menuItem.keyEquivalent = shortcut.nsMenuItemKeyEquivalent ?? ""
+	menuItem.keyEquivalentModifierMask = modifierMask
+} else {
+	menuItem.keyEquivalent = ""
+	menuItem.keyEquivalentModifierMask = []
+}
+```
 
 #### Dynamic keyboard shortcuts
 
-Your app might need to support keyboard shortcuts for user-defined actions. Normally, you would statically register the keyboard shortcuts upfront in `extension KeyboardShortcuts.Name {}`. However, this is not a requirement. It's only for convenience so that you can use dot-syntax when calling various APIs (for example, `.onKeyDown(.unicornMode) {}`). You can create `KeyboardShortcuts.Name`'s dynamically and store them yourself. You can see this in action in the example project.
+Your app might need keyboard shortcuts for user-defined actions. Normally, you statically register names in `extension KeyboardShortcuts.Name {}`. That is optional and mainly for dot-syntax convenience when calling APIs (for example, `KeyboardShortcuts.onKeyDown(for: .unicornMode) {}`). You can also create `KeyboardShortcuts.Name` values dynamically and store them yourself.
 
 #### Default keyboard shortcuts
 
@@ -154,7 +181,7 @@ extension KeyboardShortcuts.Name {
 
 #### Get all keyboard shortcuts
 
-To get all the keyboard shortcut `Name`'s, conform `KeyboardShortcuts.Name` to `CaseIterable`.
+To get all keyboard shortcut names, conform `KeyboardShortcuts.Name` to `CaseIterable`.
 
 ```swift
 import KeyboardShortcuts
@@ -176,7 +203,7 @@ extension KeyboardShortcuts.Name: CaseIterable {
 print(KeyboardShortcuts.Name.allCases)
 ```
 
-And to get all the `Name`'s with a set keyboard shortcut:
+And to get all names with a configured shortcut:
 
 ```swift
 print(KeyboardShortcuts.Name.allCases.filter { $0.shortcut != nil })
@@ -246,6 +273,5 @@ No. However, there is nothing stopping you from using Swift Package Manager for 
 
 ## Related
 
-- [Defaults](https://github.com/sindresorhus/Defaults) - Swifty and modern UserDefaults
-- [LaunchAtLogin](https://github.com/sindresorhus/LaunchAtLogin) - Add "Launch at Login" functionality to your macOS app
-- [More…](https://github.com/search?q=user%3Asindresorhus+language%3Aswift+archived%3Afalse&type=repositories)
+- [KeyboardShortcuts (upstream)](https://github.com/sindresorhus/KeyboardShortcuts)
+- [Example app in this fork](./Example/KeyboardShortcutsExample)

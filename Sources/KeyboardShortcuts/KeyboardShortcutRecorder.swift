@@ -43,7 +43,7 @@ public struct KeyboardShortcutRecorder: View {
 				.frame(width: 14, height: 14)
 				.padding(.leading)
 				.padding(.trailing, 7)
-					.onChange(of: userDesiredIsEnabled) { _ in
+					.onChange(of: userDesiredIsEnabled) { _, _ in
 						onInteraction?()
 					}
 
@@ -92,7 +92,8 @@ public struct KeyboardShortcutRecorder: View {
 						}
 			if isConflicting && userDesiredIsEnabled {
 				Image(systemName: "exclamationmark.triangle")
-					.foregroundColor(isFocused ? .white : .secondary)
+					.renderingMode(.template)
+					.foregroundColor(isFocused ? (isAppActive ? .white : .primary) : .secondary)
 					.help(conflictReason)
 				}
 			}
