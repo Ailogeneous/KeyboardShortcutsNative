@@ -1,18 +1,24 @@
 <div align="center">
-<img src="https://raw.githubusercontent.com/Ailogeneous/KeyboardShortcutsNative/main/logo-light.png" alt="KeyboardShortcuts Logo" width="500">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Ailogeneous/KeyboardShortcutsNative/main/logo-dark.png">
+  <img src="https://raw.githubusercontent.com/Ailogeneous/KeyboardShortcutsNative/main/logo-light.png" alt="KeyboardShortcuts Logo" width="1000">
+</picture>
+
+<br>
+
+<div align="center">	
 	
 **This is a native-styled fork of KeyboardShortcuts.**
-	
+
 [Installation](#install) • [Usage](#usage) • [API](#api) • [Tips](#tips)
 </div>
 
 ---
-
-<img src="Screenshot.png" width="532">
-<img src="ScreenshotExample.png" width="532">
-<img src="ScreenshotConflict.png" width="532">
-<img src="ScreenshotEdit.png" width="532">
-
+![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/Screenshot.png)
+![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/ScreenshotExample.png)
+![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/ScreenshotConflict.png)
+![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/ScreenshotEdit.png)
 ___
 
 This package lets you add support for user-customizable global keyboard shortcuts to your macOS app in minutes. It's fully sandboxed and Mac App Store compatible.
