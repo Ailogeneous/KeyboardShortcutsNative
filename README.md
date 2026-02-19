@@ -278,4 +278,4 @@ No. However, there is nothing stopping you from using Swift Package Manager for 
 - [KeyboardShortcuts (upstream)](https://github.com/sindresorhus/KeyboardShortcuts)
 - [Example app in this fork](./Example/KeyboardShortcutsExample)
 
-[image-1]:	Icons/Screenshot.png
+[image-1]:	Resources/Screenshot.png
