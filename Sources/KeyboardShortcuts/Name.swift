@@ -35,19 +35,21 @@ extension KeyboardShortcuts {
 		- Parameter name: Name of the shortcut.
 		- Parameter initialShortcut: Optional default key combination. Do not set this unless it's essential. Users find it annoying when random apps steal their existing keyboard shortcuts. It's generally better to show a welcome screen on the first app launch that lets the user set the shortcut.
 		*/
-		public init(_ name: String, default initialShortcut: Shortcut? = nil) {
-			self.rawValue = name
-			self.defaultShortcut = initialShortcut
+			public init(_ name: String, default initialShortcut: Shortcut? = nil) {
+				self.rawValue = name
+				self.defaultShortcut = initialShortcut
 
 			if
 				let initialShortcut,
 				!userDefaultsContains(name: self)
-			{
-				setShortcut(initialShortcut, for: self)
+				{
+					setShortcut(initialShortcut, for: self)
+				}
+
+				KeyboardShortcuts.initialize()
 			}
 		}
 	}
-}
 
 extension KeyboardShortcuts.Name: RawRepresentable {
 	/// :nodoc:

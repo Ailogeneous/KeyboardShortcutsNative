@@ -54,17 +54,21 @@ import SwiftUI
 import KeyboardShortcuts
 
 struct SettingsScreen: View {
+	@State private var selectedField: KeyboardShortcuts.Name?
+
 	var body: some View {
-		Form {
-			KeyboardShortcuts.Recorder("Toggle Unicorn Mode:", name: .toggleUnicornMode)
+		VStack(spacing: 0) {
+			KeyboardShortcutRecorder(
+				for: .toggleUnicornMode,
+				label: "Toggle Unicorn Mode",
+				focused: $selectedField
+			)
 		}
 	}
 }
 ```
 
-*There's also [support for Cocoa](#cocoa) instead of SwiftUI.*
-
-`KeyboardShortcuts.Recorder` takes care of storing the keyboard shortcut in `UserDefaults` and also warning the user if the chosen keyboard shortcut is already used by the system or the app's main menu.
+`KeyboardShortcutRecorder` stores the shortcut in `UserDefaults` and warns when the chosen shortcut conflicts with the system or app menu.
 
 Add a listener for when the user presses their chosen keyboard shortcut.
 
@@ -109,21 +113,7 @@ You can also find a [real-world example](https://github.com/sindresorhus/Plash/b
 
 #### Cocoa
 
-Using [`KeyboardShortcuts.RecorderCocoa`](Sources/KeyboardShortcuts/RecorderCocoa.swift) instead of `KeyboardShortcuts.Recorder`:
-
-```swift
-import AppKit
-import KeyboardShortcuts
-
-final class SettingsViewController: NSViewController {
-	override func loadView() {
-		view = NSView()
-
-		let recorder = KeyboardShortcuts.RecorderCocoa(for: .toggleUnicornMode)
-		view.addSubview(recorder)
-	}
-}
-```
+This fork currently provides the SwiftUI `KeyboardShortcutRecorder` API only.
 
 ## Localization
 
@@ -144,9 +134,7 @@ This package supports [localizations](/Sources/KeyboardShortcuts/Localization). 
 
 #### Show a recorded keyboard shortcut in an `NSMenuItem`
 
-<!-- TODO: Link to the docs instead when DocC supports showing type extensions. -->
-
-See [`NSMenuItem#setShortcut`](https://github.com/sindresorhus/KeyboardShortcuts/blob/0dcedd56994d871f243f3d9c76590bfd9f8aba69/Sources/KeyboardShortcuts/NSMenuItem%2B%2B.swift#L14-L41).
+The `NSMenuItem` extension helper from upstream is not currently included in this fork.
 
 #### Dynamic keyboard shortcuts
 
@@ -207,7 +195,7 @@ print(modifiers.ks_symbolicRepresentation)
 
 // Also works with shortcuts:
 if let shortcut = KeyboardShortcuts.getShortcut(for: .toggleUnicornMode) {
-	print(shortcut.modifiers.ks_symbolicRepresentation)
+	print(shortcut.modifiers.description)
 	//=> "⌘⌥"
 }
 ```
@@ -222,7 +210,6 @@ This package:
 - SwiftUI component included.
 - Support for listening to key down, not just key up.
 - Swift Package Manager support.
-- Connect a shortcut to an `NSMenuItem`.
 - Works when [`NSMenu` is open](https://github.com/sindresorhus/KeyboardShortcuts/issues/1) (e.g. menu bar apps).
 
 `MASShortcut`:
