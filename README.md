@@ -1,10 +1,11 @@
 <div align="center">
+
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="logo-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="logo-light.png">
-  <!-- Xcode will likely only see and render this line -->
-  <img alt="KeyboardShortcuts logo" src="logo-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Ailogeneous/KeyboardShortcutsNative/main/logo-dark.png">
+  <img src="https://raw.githubusercontent.com/Ailogeneous/KeyboardShortcutsNative/main/logo-light.png" alt="KeyboardShortcuts Logo" width="1000">
 </picture>
+
+<br>
 	
 **This is a native-styled fork of KeyboardShortcuts.**
 	
