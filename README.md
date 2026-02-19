@@ -15,7 +15,8 @@
 </div>
 
 ---
-![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/Resources/Screenshot.png)
+![Screenshot][image-1]
+
 ![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main//Resources/ScreenshotExample.png)
 ![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/Resources/ScreenshotConflict.png)
 ![SwiftLint violations highlighted in the Xcode editor](https://github.com/Ailogeneous/KeyboardShortcutsNative/blob/main/Resources/ScreenshotEdit.png)
@@ -276,3 +277,5 @@ No. However, there is nothing stopping you from using Swift Package Manager for 
 
 - [KeyboardShortcuts (upstream)](https://github.com/sindresorhus/KeyboardShortcuts)
 - [Example app in this fork](./Example/KeyboardShortcutsExample)
+
+[image-1]:	Icons/Screenshot.png
