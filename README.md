@@ -1,4 +1,4 @@
-[logo-blue]: Resources/logo-blue.png
+[logo]: Resources/logo.png
 [Screenshot]:	Resources/Screenshot.png
 [ScreenshotExample]:	Resources/ScreenshotExample.png
 [ScreenshotConflict]:	Resources/ScreenshotConflict.png
@@ -6,7 +6,7 @@
 
 <div align="center">
 
-![Logo blue][logo-blue]
+![Logo][logo]
 	
 **This is a native-styled fork of KeyboardShortcuts.**
 
