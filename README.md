@@ -5,13 +5,17 @@
 [ScreenshotConflict]:	Resources/ScreenshotConflict.png
 [ScreenshotEdit]:	Resources/ScreenshotEdit.png
 
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="Resources/logo-dark.png">
+    <img src="Resources/logo-light.png" alt="Logo">
+  </picture>
+</div>
 
 <div align="center">
 
 ![Logo light][logo-light]
 ![Logo dark][logo-dark]
-
-<div align="center">	
 	
 **This is a native-styled fork of KeyboardShortcuts.**
 
