@@ -35,7 +35,7 @@ public struct KeyboardShortcutRecorder: View {
 		
 		HStack {
 			
-			Toggle("", isOn: $userDesiredIsEnabled)
+				Toggle("", isOn: $userDesiredIsEnabled)
 				.toggleStyle(.checkbox)
 				.focusable(false)
 				.focusEffectDisabled(true)
@@ -43,9 +43,11 @@ public struct KeyboardShortcutRecorder: View {
 				.frame(width: 14, height: 14)
 				.padding(.leading)
 				.padding(.trailing, 7)
-					.onChange(of: userDesiredIsEnabled) { _, _ in
-						onInteraction?()
-					}
+						.onChange(of: userDesiredIsEnabled) { _, newValue in
+							persistEnabledPreference(newValue)
+							applyEnabledState(newValue)
+							onInteraction?()
+						}
 
 				Text(label)
 					.foregroundColor(isFocused && isAppActive ? .white : .primary)
@@ -121,10 +123,12 @@ public struct KeyboardShortcutRecorder: View {
 		.onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
 			isAppActive = false
 		}
-		.onAppear {
-			currentShortcut = KeyboardShortcuts.getShortcut(for: shortcutName)
-			updateConflictStatus(for: currentShortcut)
-		}
+			.onAppear {
+				currentShortcut = KeyboardShortcuts.getShortcut(for: shortcutName)
+				userDesiredIsEnabled = loadEnabledPreference()
+				applyEnabledState(userDesiredIsEnabled)
+				updateConflictStatus(for: currentShortcut)
+			}
 		.onChange(of: currentShortcut) { _, newValue in
 			KeyboardShortcuts.setShortcut(newValue, for: shortcutName)
 			updateConflictStatus(for: newValue)
@@ -139,7 +143,30 @@ public struct KeyboardShortcutRecorder: View {
 					isRecording = false
 				}
 			}
+	}
+
+	private var enabledDefaultsKey: String {
+		"KeyboardShortcutsEnabled_\(shortcutName.rawValue)"
+	}
+
+	private func loadEnabledPreference() -> Bool {
+		guard UserDefaults.standard.object(forKey: enabledDefaultsKey) != nil else {
+			return true
 		}
+		return UserDefaults.standard.bool(forKey: enabledDefaultsKey)
+	}
+
+	private func persistEnabledPreference(_ isEnabled: Bool) {
+		UserDefaults.standard.set(isEnabled, forKey: enabledDefaultsKey)
+	}
+
+	private func applyEnabledState(_ isEnabled: Bool) {
+		if isEnabled {
+			KeyboardShortcuts.enable(shortcutName)
+		} else {
+			KeyboardShortcuts.disable(shortcutName)
+		}
+	}
 
 	private func handleKeyPress(_ keyPress: SwiftUI.KeyPress) {
 		if keyPress.key == .escape {
