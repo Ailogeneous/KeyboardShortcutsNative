@@ -59,7 +59,13 @@ public enum KeyboardShortcuts {
 		}
 	}
 
-	static var allNames: Set<Name> {
+	/**
+	All shortcut names that currently have a stored value in `UserDefaults`.
+
+	This includes names whose shortcut was set by the user. Names that were never stored will not appear.
+	The returned `Name` instances only carry the `rawValue`, not the `defaultShortcut`.
+	*/
+	public static var storedNames: Set<Name> {
 		UserDefaults.standard.dictionaryRepresentation()
 			.compactMap { key, _ in
 				guard key.hasPrefix(userDefaultsPrefix) else {
@@ -69,7 +75,11 @@ public enum KeyboardShortcuts {
 				let name = key.replacingPrefix(userDefaultsPrefix, with: "")
 				return .init(name)
 			}
-			.toSet()
+				.toSet()
+	}
+
+	static var allNames: Set<Name> {
+		storedNames
 	}
 
 	/**

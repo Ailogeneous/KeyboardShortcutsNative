@@ -243,6 +243,19 @@ struct KeyboardShortcutsTests {
 		#expect(KeyboardShortcuts.getShortcut(for: name2) == .init(.b))
 		#expect(KeyboardShortcuts.getShortcut(for: name3) == nil)
 	}
+
+	@Test("Stored names")
+	func testStoredNames() throws {
+		let name1 = KeyboardShortcuts.Name("stored1")
+		let name2 = KeyboardShortcuts.Name("stored2")
+
+		KeyboardShortcuts.setShortcut(.init(.a, modifiers: [.command]), for: name1)
+		KeyboardShortcuts.setShortcut(.init(.b, modifiers: [.option]), for: name2)
+
+		let storedRawValues = Set(KeyboardShortcuts.storedNames.map(\.rawValue))
+		#expect(storedRawValues.contains(name1.rawValue))
+		#expect(storedRawValues.contains(name2.rawValue))
+	}
 }
 
 // MARK: - Modifier Symbol Tests
