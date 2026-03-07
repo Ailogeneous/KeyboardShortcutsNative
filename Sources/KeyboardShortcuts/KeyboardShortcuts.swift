@@ -249,24 +249,6 @@ public enum KeyboardShortcuts {
 	}
 
 	/**
-	Set the enabled state for one or more names.
-	*/
-	public static func setEnabled(_ isEnabled: Bool, for names: [Name]) {
-		if isEnabled {
-			enable(names)
-		} else {
-			disable(names)
-		}
-	}
-
-	/**
-	Set the enabled state for one or more names.
-	*/
-	public static func setEnabled(_ isEnabled: Bool, for names: Name...) {
-		setEnabled(isEnabled, for: names)
-	}
-
-	/**
 	Enable the keyboard shortcut for one or more names.
 	*/
 	public static func enable(_ names: [Name]) {
