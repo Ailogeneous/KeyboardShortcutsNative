@@ -2,20 +2,34 @@ import SwiftUI
 import Carbon.HIToolbox
 
 public struct KeyboardShortcutRecorder: View {
-	public let shortcutName: KeyboardShortcuts.Name
 	public let label: String
 	public let onChange: ((KeyboardShortcuts.Shortcut?) -> Void)?
 	public let onInteraction: (() -> Void)?
 	@Binding public var focused: KeyboardShortcuts.Name?
 
+	private let shortcutName: KeyboardShortcuts.Name?
+	private let shortcutBinding: Binding<KeyboardShortcuts.Shortcut?>?
+
 	@State private var currentShortcut: KeyboardShortcuts.Shortcut?
-	private var isFocused: Bool { shortcutName == focused }
 	@State private var isRecording = false
+	@State private var isLocallyFocused = false
 	@FocusState private var isTextFieldFocused: Bool
 	@State private var isConflicting = false
 	@State private var conflictReason = ""
 	@State private var userDesiredIsEnabled: Bool = true
 	@State private var isAppActive: Bool = NSApp.isActive
+
+	private var isFocused: Bool {
+		if let shortcutName {
+			return shortcutName == focused
+		}
+
+		return isLocallyFocused
+	}
+
+	private var showsEnabledToggle: Bool {
+		shortcutName != nil
+	}
 
 	public init(
 		for name: KeyboardShortcuts.Name,
@@ -25,112 +39,140 @@ public struct KeyboardShortcutRecorder: View {
 		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
 	) {
 		self.shortcutName = name
+		self.shortcutBinding = nil
 		self.label = label
 		self._focused = focused
 		self.onInteraction = onInteraction
 		self.onChange = onChange
 	}
 
+	public init(
+		shortcut: Binding<KeyboardShortcuts.Shortcut?>,
+		label: String,
+		onInteraction: (() -> Void)? = nil,
+		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
+	) {
+		self.shortcutName = nil
+		self.shortcutBinding = shortcut
+		self.label = label
+		self._focused = .constant(nil)
+		self.onInteraction = onInteraction
+		self.onChange = onChange
+	}
+
 	public var body: some View {
-		
 		HStack {
-			
+			if showsEnabledToggle {
 				Toggle("", isOn: $userDesiredIsEnabled)
-				.toggleStyle(.checkbox)
-				.focusable(false)
-				.focusEffectDisabled(true)
-				.labelsHidden()
-				.frame(width: 14, height: 14)
-				.padding(.leading)
-				.padding(.trailing, 7)
-						.onChange(of: userDesiredIsEnabled) { _, newValue in
-							persistEnabledPreference(newValue)
-							applyEnabledState(newValue)
-							onInteraction?()
+					.toggleStyle(.checkbox)
+					.focusable(false)
+					.focusEffectDisabled(true)
+					.labelsHidden()
+					.frame(width: 14, height: 14)
+					.padding(.leading)
+					.padding(.trailing, 7)
+					.onChange(of: userDesiredIsEnabled) { _, newValue in
+						persistEnabledPreference(newValue)
+						applyEnabledState(newValue)
+						onInteraction?()
+					}
+			} else {
+				Color.clear
+					.frame(width: 35, height: 14)
+			}
+
+			Text(label)
+				.foregroundColor(isFocused && isAppActive ? .white : .primary)
+				.font(.system(size: 13, weight: .regular))
+			Spacer()
+
+			ZStack {
+				if isRecording {
+					TextField("", text: .constant(""))
+						.focused($isTextFieldFocused)
+						.textFieldStyle(.plain)
+						.multilineTextAlignment(.trailing)
+						.frame(width: 100, height: 18, alignment: .trailing)
+						.foregroundStyle(.clear)
+						.tint(.blue)
+						.onKeyPress { keyPress in
+							handleKeyPress(keyPress)
+							return .handled
 						}
-
-				Text(label)
-					.foregroundColor(isFocused && isAppActive ? .white : .primary)
-					.font(.system(size: 13, weight: .regular))
-				Spacer()
-
-				ZStack {
-					if isRecording {
-						TextField("", text: .constant(""))
-							.focused($isTextFieldFocused)
-							.textFieldStyle(.plain)
-							.multilineTextAlignment(.trailing)
-							.frame(width: 100, height: 18, alignment: .trailing)
-							.foregroundStyle(.clear)
-							.tint(.blue)
-							.onKeyPress { keyPress in
-								handleKeyPress(keyPress)
-								return .handled
-							}
-							.padding(.trailing, 4)
-							.background(Rectangle().fill(Color.white))
-							.frame(width: 100, height: 18)
-						} else {
-							HStack(spacing: 4) {
-								Text(currentShortcut?.description ?? "none")
-									.font(.system(size: currentShortcut == nil ? 10 : 13, weight: .regular))
-									.foregroundColor(
-									currentShortcut == nil
+						.padding(.trailing, 4)
+						.background(Rectangle().fill(Color.white))
+						.frame(width: 100, height: 18)
+				} else {
+					HStack(spacing: 4) {
+						Text(currentShortcut?.description ?? "none")
+							.font(.system(size: currentShortcut == nil ? 10 : 13, weight: .regular))
+							.foregroundColor(
+								currentShortcut == nil
 									? (isFocused && isAppActive ? .white : .secondary)
 									: (isFocused && isAppActive ? .white : .primary)
-								)
-						}
-						.frame(width: 100, height: 18, alignment: .trailing)
+							)
 					}
+					.frame(width: 100, height: 18, alignment: .trailing)
 				}
-				.contentShape(Rectangle())
-						.onTapGesture {
-							if isFocused {
-								isRecording = true
-							} else {
-								focused = shortcutName
-								onInteraction?()
-							}
-						}
+			}
+			.contentShape(Rectangle())
+			.onTapGesture {
+				if isFocused {
+					isRecording = true
+				} else {
+					activateFocus()
+				}
+			}
+
 			if isConflicting && userDesiredIsEnabled {
 				Image(systemName: "exclamationmark.triangle")
 					.renderingMode(.template)
 					.foregroundColor(isFocused ? (isAppActive ? .white : .primary) : .secondary)
 					.help(conflictReason)
+			}
+		}
+		.padding(.horizontal, 12)
+		.padding(.vertical, 4)
+		.frame(minWidth: 300, maxWidth: .infinity, minHeight: 18, maxHeight: .infinity, alignment: .center)
+		.focusEffectDisabled(true)
+		.background(
+			Group {
+				if isFocused {
+					Rectangle()
+						.fill(isAppActive ? Color(nsColor: .selectedContentBackgroundColor) : Color.secondary.opacity(0.2))
+						.padding(.horizontal, -10)
 				}
 			}
-			.padding(.horizontal, 12)
-			.padding(.vertical, 4)
-			.frame(minWidth: 300, maxWidth: .infinity, minHeight: 18, maxHeight: .infinity, alignment: .center)
-			.focusEffectDisabled(true)
-			.background(
-				Group {
-					if isFocused {
-						Rectangle()
-							.fill(isAppActive ? Color(nsColor: .selectedContentBackgroundColor) : Color.secondary.opacity(0.2))
-							.padding(.horizontal, -10)
-					}
-				}
-			)
-			.contentShape(Rectangle())
-					.onTapGesture {
-						focused = shortcutName
-						onInteraction?()
-					}
+		)
+		.contentShape(Rectangle())
+		.onTapGesture {
+			activateFocus()
+		}
 		.onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
 			isAppActive = true
 		}
 		.onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
 			isAppActive = false
 		}
-			.onAppear {
+		.onAppear {
+			if let shortcutName {
 				currentShortcut = KeyboardShortcuts.getShortcut(for: shortcutName)
 				userDesiredIsEnabled = loadEnabledPreference()
 				applyEnabledState(userDesiredIsEnabled)
-				updateConflictStatus(for: currentShortcut)
+			} else {
+				currentShortcut = shortcutBinding?.wrappedValue
+				userDesiredIsEnabled = true
 			}
+
+			updateConflictStatus(for: currentShortcut)
+		}
 		.onChange(of: currentShortcut) { _, newValue in
-			KeyboardShortcuts.setShortcut(newValue, for: shortcutName)
+			if let shortcutName {
+				KeyboardShortcuts.setShortcut(newValue, for: shortcutName)
+			} else {
+				shortcutBinding?.wrappedValue = newValue
+			}
+
 			updateConflictStatus(for: newValue)
 			onChange?(newValue)
 		}
@@ -138,29 +180,65 @@ public struct KeyboardShortcutRecorder: View {
 			KeyboardShortcuts.isPaused = newValue
 			isTextFieldFocused = newValue
 		}
-			.onChange(of: focused) { _, newValue in
-				if newValue != shortcutName {
-					isRecording = false
-				}
+		.onChange(of: focused) { _, newValue in
+			guard let shortcutName else {
+				return
 			}
+
+			if newValue != shortcutName {
+				isRecording = false
+			}
+		}
+		.onChange(of: shortcutBinding?.wrappedValue) { _, newValue in
+			guard shortcutName == nil else {
+				return
+			}
+
+			if currentShortcut != newValue {
+				currentShortcut = newValue
+			}
+		}
 	}
 
-	private var enabledDefaultsKey: String {
-		"KeyboardShortcutsEnabled_\(shortcutName.rawValue)"
+	private func activateFocus() {
+		if shortcutName != nil {
+			focused = shortcutName
+		} else {
+			isLocallyFocused = true
+		}
+
+		onInteraction?()
+	}
+
+	private var enabledDefaultsKey: String? {
+		shortcutName.map { "KeyboardShortcutsEnabled_\($0.rawValue)" }
 	}
 
 	private func loadEnabledPreference() -> Bool {
+		guard let enabledDefaultsKey else {
+			return true
+		}
+
 		guard UserDefaults.standard.object(forKey: enabledDefaultsKey) != nil else {
 			return true
 		}
+
 		return UserDefaults.standard.bool(forKey: enabledDefaultsKey)
 	}
 
 	private func persistEnabledPreference(_ isEnabled: Bool) {
+		guard let enabledDefaultsKey else {
+			return
+		}
+
 		UserDefaults.standard.set(isEnabled, forKey: enabledDefaultsKey)
 	}
 
 	private func applyEnabledState(_ isEnabled: Bool) {
+		guard let shortcutName else {
+			return
+		}
+
 		if isEnabled {
 			KeyboardShortcuts.enable(shortcutName)
 		} else {
@@ -172,6 +250,7 @@ public struct KeyboardShortcutRecorder: View {
 		if keyPress.key == .escape {
 			isRecording = false
 			focused = nil
+			isLocallyFocused = false
 			return
 		}
 
@@ -179,6 +258,7 @@ public struct KeyboardShortcutRecorder: View {
 			currentShortcut = nil
 			isRecording = false
 			focused = nil
+			isLocallyFocused = false
 			return
 		}
 
@@ -188,12 +268,13 @@ public struct KeyboardShortcutRecorder: View {
 		else {
 			return
 		}
-		
+
 		let newShortcut = KeyboardShortcuts.Shortcut(key, modifiers: keyPress.modifiers)
-		
+
 		currentShortcut = newShortcut
 		isRecording = false
 		focused = nil
+		isLocallyFocused = false
 	}
 
 	private func updateConflictStatus(for shortcut: KeyboardShortcuts.Shortcut?) {
@@ -203,7 +284,7 @@ public struct KeyboardShortcutRecorder: View {
 				conflictReason = ""
 				return
 			}
-			
+
 			if shortcut.isDisallowed {
 				isConflicting = true
 				conflictReason = "This shortcut is disallowed by the system."
@@ -216,5 +297,4 @@ public struct KeyboardShortcutRecorder: View {
 			}
 		}
 	}
-
 }
