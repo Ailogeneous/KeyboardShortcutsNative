@@ -243,6 +243,19 @@ struct KeyboardShortcutsTests {
 		#expect(KeyboardShortcuts.getShortcut(for: name2) == .init(.b))
 		#expect(KeyboardShortcuts.getShortcut(for: name3) == nil)
 	}
+
+	@Test("Set enabled convenience")
+	func testSetEnabledConvenience() throws {
+		let name = KeyboardShortcuts.Name("setEnabledConvenience")
+		let shortcut = KeyboardShortcuts.Shortcut(.k, modifiers: [.command, .shift])
+		KeyboardShortcuts.setShortcut(shortcut, for: name)
+
+		KeyboardShortcuts.setEnabled(false, for: name)
+		#expect(!KeyboardShortcuts.isEnabled(for: name))
+
+		KeyboardShortcuts.setEnabled(true, for: name)
+		#expect(KeyboardShortcuts.isEnabled(for: name))
+	}
 }
 
 // MARK: - Modifier Symbol Tests
