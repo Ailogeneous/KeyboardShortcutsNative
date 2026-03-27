@@ -142,7 +142,6 @@ public struct KeyboardShortcutRecorder: View {
 					TextField("", text: .constant(""))
 						.focused($isTextFieldFocused)
 						.textFieldStyle(.plain)
-						.colorScheme(.light)
 						.multilineTextAlignment(.trailing)
 						.tint(.blue)
 						.onKeyPress { keyPress in
@@ -158,7 +157,7 @@ public struct KeyboardShortcutRecorder: View {
 			.frame(maxWidth: .infinity, alignment: .trailing)
 			.offset(x: conflictOffset)
 		}
-		.frame(maxWidth: .infinity, minHeight: 26, maxHeight: 26)
+		.frame(maxWidth: .infinity, minHeight: 20, maxHeight: 26)
 		.contentShape(Rectangle())
 		.onTapGesture {
 			guard !isRecording else { return }
