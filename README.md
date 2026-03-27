@@ -50,7 +50,7 @@ extension KeyboardShortcuts.Name {
 
 You can then refer to this strongly-typed name in other places.
 
-You will want to make a view where the user can choose a keyboard shortcut.
+You will want to make a view where the user can choose a keyboard shortcut. The toggle and recorder are separate views so you can place them in distinct table columns.
 
 `SettingsScreen.swift`
 
@@ -60,14 +60,35 @@ import KeyboardShortcuts
 
 struct SettingsScreen: View {
 	@State private var selectedField: KeyboardShortcuts.Name?
+	@State private var selectedRow: KeyboardShortcuts.Name?
+
+	struct ShortcutRow: Identifiable {
+		let id: KeyboardShortcuts.Name
+		let label: String
+	}
+
+	private let rows: [ShortcutRow] = [
+		ShortcutRow(id: .toggleUnicornMode, label: "Toggle Unicorn Mode")
+	]
 
 	var body: some View {
-		VStack(spacing: 0) {
-			KeyboardShortcutRecorder(
-				for: .toggleUnicornMode,
-				label: "Toggle Unicorn Mode",
-				focused: $selectedField
-			)
+		Table(rows, selection: $selectedRow) {
+			TableColumn("Shortcut") { row in
+				KeyboardShortcutToggle(for: row.id, label: row.label)
+					.padding(.leading, 10)
+			}
+
+			TableColumn("Recorder") { row in
+				KeyboardShortcutRecorder(
+					for: row.id,
+					focused: $selectedField
+				)
+			}
+			.width(100)
+		}
+		.onChange(of: selectedRow) { _, newValue in
+			guard selectedField != newValue else { return }
+			selectedField = newValue
 		}
 	}
 }
@@ -114,7 +135,7 @@ For a complete, fork-aligned implementation, use the example app in this reposit
 
 #### Cocoa
 
-This fork currently provides the SwiftUI `KeyboardShortcutRecorder` API only.
+This fork currently provides the SwiftUI `KeyboardShortcut` API only.
 
 ## Localization
 
@@ -129,10 +150,10 @@ This package supports [localizations](/Sources/KeyboardShortcuts/Localization). 
 
 ## API
 
-The API surface stays close to upstream `KeyboardShortcuts`, with fork-specific recorder UI behavior.
+The API surface stays close to upstream `KeyboardShortcuts`, with fork-specific recorder UI behavior and table-friendly layout.
 
 Most-used APIs:
-- `KeyboardShortcutRecorder(for:label:focused:onInteraction:onChange:)`
+- `KeyboardShortcut(for:label:focused:onInteraction:onChange:)`
 - `KeyboardShortcuts.onKeyDown(for:action:)` / `KeyboardShortcuts.onKeyUp(for:action:)`
 - `KeyboardShortcuts.events(for:)` and `KeyboardShortcuts.events(_:for:)`
 - `KeyboardShortcuts.getShortcut(for:)` / `KeyboardShortcuts.setShortcut(_:for:)`

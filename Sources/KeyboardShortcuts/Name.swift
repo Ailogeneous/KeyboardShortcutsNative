@@ -3,7 +3,7 @@ extension KeyboardShortcuts {
 	/**
 	The strongly-typed name of the keyboard shortcut.
 
-	After registering it, you can use it in, for example, `KeyboardShortcut.Recorder` and `KeyboardShortcut.onKeyUp()`.
+	After registering it, you can use it in, for example, `KeyboardShortcut` and `KeyboardShortcut.onKeyUp()`.
 
 	```swift
 	import KeyboardShortcuts

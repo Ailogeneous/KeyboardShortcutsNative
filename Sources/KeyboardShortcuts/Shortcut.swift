@@ -70,7 +70,7 @@ extension KeyboardShortcuts {
 		}
 
 		/**
-		Initialize from a keyboard shortcut stored by `Recorder`.
+		Initialize from a keyboard shortcut stored by `KeyboardShortcut`.
 		*/
 		public init?(name: Name) {
 			guard let shortcut = getShortcut(for: name) else {
