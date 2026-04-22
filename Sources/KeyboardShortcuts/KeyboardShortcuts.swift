@@ -7,6 +7,7 @@ Global keyboard shortcuts for your macOS app.
 */
 public enum KeyboardShortcuts {
 	private static var registeredShortcuts = Set<Shortcut>()
+	private static var disabledNames = Set<Name>()
 
 	private static var legacyKeyDownHandlers = [Name: [() -> Void]]()
 	private static var legacyKeyUpHandlers = [Name: [() -> Void]]()
@@ -117,7 +118,10 @@ public enum KeyboardShortcuts {
 	Register the shortcut for the given name if it has a shortcut.
 	*/
 	private static func registerShortcutIfNeeded(for name: Name) {
-		guard let shortcut = getShortcut(for: name) else {
+		guard 
+			!disabledNames.contains(name),
+			let shortcut = getShortcut(for: name) 
+		else {
 			return
 		}
 
@@ -230,6 +234,7 @@ public enum KeyboardShortcuts {
 	public static func isEnabled(for name: Name) -> Bool {
 		guard
 			isEnabled,
+			!disabledNames.contains(name),
 			let shortcut = getShortcut(for: name)
 		else {
 			return false
@@ -243,11 +248,23 @@ public enum KeyboardShortcuts {
 	*/
 	public static func disable(_ names: [Name]) {
 		for name in names {
+			disabledNames.insert(name)
+			
 			guard let shortcut = getShortcut(for: name) else {
+				NotificationCenter.default.post(name: .shortcutByNameDidChange, object: nil, userInfo: ["name": name])
 				continue
 			}
-
-			unregister(shortcut)
+			
+			// Only unregister if no other non-disabled names use this shortcut
+			let otherNamesUsingShortcut = allNames.filter {
+				$0 != name && !disabledNames.contains($0) && getShortcut(for: $0) == shortcut
+			}
+			
+			if otherNamesUsingShortcut.isEmpty {
+				unregister(shortcut)
+			}
+			
+			NotificationCenter.default.post(name: .shortcutByNameDidChange, object: nil, userInfo: ["name": name])
 		}
 	}
 
@@ -263,11 +280,15 @@ public enum KeyboardShortcuts {
 	*/
 	public static func enable(_ names: [Name]) {
 		for name in names {
+			disabledNames.remove(name)
+			
 			guard let shortcut = getShortcut(for: name) else {
+				NotificationCenter.default.post(name: .shortcutByNameDidChange, object: nil, userInfo: ["name": name])
 				continue
 			}
 
 			register(shortcut)
+			NotificationCenter.default.post(name: .shortcutByNameDidChange, object: nil, userInfo: ["name": name])
 		}
 	}
 
@@ -391,12 +412,15 @@ public enum KeyboardShortcuts {
 	}
 
 	private static func handleOnKeyDown(_ shortcut: Shortcut) {
-		guard !isPaused else {
+		guard !isPaused, isEnabled else {
 			return
 		}
 
 		for (name, handlers) in legacyKeyDownHandlers {
-			guard getShortcut(for: name) == shortcut else {
+			guard 
+				getShortcut(for: name) == shortcut,
+				isEnabled(for: name)
+			else {
 				continue
 			}
 
@@ -406,7 +430,10 @@ public enum KeyboardShortcuts {
 		}
 
 		for (name, handlers) in streamKeyDownHandlers {
-			guard getShortcut(for: name) == shortcut else {
+			guard 
+				getShortcut(for: name) == shortcut,
+				isEnabled(for: name)
+			else {
 				continue
 			}
 
@@ -417,12 +444,15 @@ public enum KeyboardShortcuts {
 	}
 
 	private static func handleOnKeyUp(_ shortcut: Shortcut) {
-		guard !isPaused else {
+		guard !isPaused, isEnabled else {
 			return
 		}
 
 		for (name, handlers) in legacyKeyUpHandlers {
-			guard getShortcut(for: name) == shortcut else {
+			guard 
+				getShortcut(for: name) == shortcut,
+				isEnabled(for: name)
+			else {
 				continue
 			}
 
@@ -432,7 +462,10 @@ public enum KeyboardShortcuts {
 		}
 
 		for (name, handlers) in streamKeyUpHandlers {
-			guard getShortcut(for: name) == shortcut else {
+			guard 
+				getShortcut(for: name) == shortcut,
+				isEnabled(for: name)
+			else {
 				continue
 			}
 

@@ -8,6 +8,7 @@ public struct KeyboardShortcutToggle: View {
 	public let onInteraction: (() -> Void)?
 
 	@State private var userDesiredIsEnabled: Bool = true
+	@State private var notificationObserver: NSObjectProtocol?
 
 	public init(for name: KeyboardShortcuts.Name, label: String, onInteraction: (() -> Void)? = nil) {
 		self.enabledName = name
@@ -29,8 +30,14 @@ public struct KeyboardShortcutToggle: View {
 				.font(.system(size: 13, weight: .regular))
 		}
 		.onAppear {
-			userDesiredIsEnabled = loadEnabledPreference()
-			applyEnabledState(userDesiredIsEnabled)
+			syncState()
+			setupObserver()
+		}
+		.onDisappear {
+			if let observer = notificationObserver {
+				NotificationCenter.default.removeObserver(observer)
+				notificationObserver = nil
+			}
 		}
 		.onChange(of: userDesiredIsEnabled) { _, newValue in
 			persistEnabledPreference(newValue)
@@ -41,6 +48,41 @@ public struct KeyboardShortcutToggle: View {
 
 	private var enabledDefaultsKey: String {
 		"KeyboardShortcutsEnabled_\(enabledName.rawValue)"
+	}
+
+	private func syncState() {
+		// First try to load from UserDefaults (user preference)
+		let defaultsState = UserDefaults.standard.object(forKey: enabledDefaultsKey) != nil
+			? UserDefaults.standard.bool(forKey: enabledDefaultsKey)
+			: true
+			
+		// If system state differs, use actual system state
+		let systemState = KeyboardShortcuts.isEnabled(for: enabledName)
+		
+		// Always sync our state to match actual system state
+		if systemState != defaultsState {
+			// System has been changed programmatically - update our state
+			userDesiredIsEnabled = systemState
+			persistEnabledPreference(systemState)
+		} else {
+			userDesiredIsEnabled = defaultsState
+			applyEnabledState(defaultsState)
+		}
+	}
+
+	private func setupObserver() {
+		notificationObserver = NotificationCenter.default.addObserver(
+			forName: .shortcutByNameDidChange,
+			object: nil,
+			queue: .main
+		) { notification in
+			guard let name = notification.userInfo?["name"] as? KeyboardShortcuts.Name,
+				  name == self.enabledName else {
+				return
+			}
+			
+			self.syncState()
+		}
 	}
 
 	private func loadEnabledPreference() -> Bool {
