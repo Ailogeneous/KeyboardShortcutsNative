@@ -66,7 +66,6 @@ public struct KeyboardShortcutToggle: View {
 			persistEnabledPreference(systemState)
 		} else {
 			userDesiredIsEnabled = defaultsState
-			applyEnabledState(defaultsState)
 		}
 	}
 

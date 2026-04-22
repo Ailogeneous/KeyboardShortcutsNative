@@ -248,6 +248,8 @@ public enum KeyboardShortcuts {
 	*/
 	public static func disable(_ names: [Name]) {
 		for name in names {
+			guard !disabledNames.contains(name) else { continue }
+			
 			disabledNames.insert(name)
 			
 			guard let shortcut = getShortcut(for: name) else {
@@ -280,6 +282,8 @@ public enum KeyboardShortcuts {
 	*/
 	public static func enable(_ names: [Name]) {
 		for name in names {
+			guard disabledNames.contains(name) else { continue }
+			
 			disabledNames.remove(name)
 			
 			guard let shortcut = getShortcut(for: name) else {
