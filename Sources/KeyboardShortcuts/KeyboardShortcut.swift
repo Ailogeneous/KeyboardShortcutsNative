@@ -18,7 +18,7 @@ public struct KeyboardShortcutToggle: View {
 
 	public var body: some View {
 		HStack {
-			Toggle("", isOn: $userDesiredIsEnabled)
+			Toggle("", isOn: enabledBinding)
 				.toggleStyle(.checkbox)
 				.focusable(false)
 				.focusEffectDisabled(true)
@@ -39,7 +39,13 @@ public struct KeyboardShortcutToggle: View {
 				notificationObserver = nil
 			}
 		}
-		.onChange(of: userDesiredIsEnabled) { _, newValue in
+	}
+
+	private var enabledBinding: Binding<Bool> {
+		Binding {
+			userDesiredIsEnabled
+		} set: { newValue in
+			userDesiredIsEnabled = newValue
 			persistEnabledPreference(newValue)
 			applyEnabledState(newValue)
 			onInteraction?()
