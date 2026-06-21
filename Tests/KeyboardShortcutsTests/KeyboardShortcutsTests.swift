@@ -256,6 +256,20 @@ struct KeyboardShortcutsTests {
 		#expect(storedRawValues.contains(name1.rawValue))
 		#expect(storedRawValues.contains(name2.rawValue))
 	}
+
+	@Test("Disabled shortcut stays disabled when shortcut value is replayed")
+	func testDisabledShortcutStaysDisabledWhenShortcutValueIsReplayed() throws {
+		let name = KeyboardShortcuts.Name("disabledReplay")
+		let shortcut = KeyboardShortcuts.Shortcut(.p, modifiers: [.control])
+
+		KeyboardShortcuts.setShortcut(shortcut, for: name)
+		UserDefaults.standard.set(false, forKey: "KeyboardShortcutsEnabled_\(name.rawValue)")
+		KeyboardShortcuts.disable(name)
+		#expect(KeyboardShortcuts.isEnabled(for: name) == false)
+
+		KeyboardShortcuts.setShortcut(shortcut, for: name)
+		#expect(KeyboardShortcuts.isEnabled(for: name) == false)
+	}
 }
 
 // MARK: - Modifier Symbol Tests
@@ -310,7 +324,7 @@ struct ModifierSymbolTests {
 extension UserDefaults {
 	func removeAllKeyboardShortcuts() {
 		dictionaryRepresentation().keys.forEach { key in
-			if key.hasPrefix("KeyboardShortcuts_") {
+			if key.hasPrefix("KeyboardShortcuts_") || key.hasPrefix("KeyboardShortcutsEnabled_") {
 				removeObject(forKey: key)
 			}
 		}

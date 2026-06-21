@@ -57,21 +57,12 @@ public struct KeyboardShortcutToggle: View {
 	}
 
 	private func syncState() {
-		// First try to load from UserDefaults (user preference)
 		let defaultsState = UserDefaults.standard.object(forKey: enabledDefaultsKey) != nil
 			? UserDefaults.standard.bool(forKey: enabledDefaultsKey)
 			: true
-			
-		// If system state differs, use actual system state
-		let systemState = KeyboardShortcuts.isEnabled(for: enabledName)
-		
-		// Always sync our state to match actual system state
-		if systemState != defaultsState {
-			// System has been changed programmatically - update our state
-			userDesiredIsEnabled = systemState
-			persistEnabledPreference(systemState)
-		} else {
-			userDesiredIsEnabled = defaultsState
+		userDesiredIsEnabled = defaultsState
+		if KeyboardShortcuts.isEnabled(for: enabledName) != defaultsState {
+			applyEnabledState(defaultsState)
 		}
 	}
 
@@ -221,7 +212,9 @@ public struct KeyboardShortcutRecorder: View {
 		}
 		.onChange(of: currentShortcut) { _, newValue in
 			if let shortcutStorageName {
-				KeyboardShortcuts.setShortcut(newValue, for: shortcutStorageName)
+				if KeyboardShortcuts.getShortcut(for: shortcutStorageName) != newValue {
+					KeyboardShortcuts.setShortcut(newValue, for: shortcutStorageName)
+				}
 			} else {
 				shortcutBinding?.wrappedValue = newValue
 			}
