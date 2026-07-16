@@ -60,6 +60,10 @@ public struct KeyboardShortcutToggle: View {
 		let defaultsState = UserDefaults.standard.object(forKey: enabledDefaultsKey) != nil
 			? UserDefaults.standard.bool(forKey: enabledDefaultsKey)
 			: true
+		guard KeyboardShortcuts.getShortcut(for: enabledName) != nil else {
+			userDesiredIsEnabled = false
+			return
+		}
 		userDesiredIsEnabled = defaultsState
 		if KeyboardShortcuts.isEnabled(for: enabledName) != defaultsState {
 			applyEnabledState(defaultsState)
