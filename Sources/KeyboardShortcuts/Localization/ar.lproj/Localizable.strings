@@ -7,3 +7,6 @@
 "force_use_shortcut" = "استخدم على أي حال";
 "ok" = "موافق";
 "space_key" = "مسافة";
+"none" = "لا يوجد";
+"shortcut_disallowed_by_system" = "هذا الاختصار غير مسموح به من النظام.";
+"shortcut_used_by_system_or_app" = "هذا الاختصار مستخدم من النظام أو التطبيق.";

@@ -7,3 +7,6 @@
 "force_use_shortcut" = "Usa comunque";
 "ok" = "OK";
 "space_key" = "Spazio";
+"none" = "nessuno";
+"shortcut_disallowed_by_system" = "Il sistema non consente questa scorciatoia.";
+"shortcut_used_by_system_or_app" = "Questa scorciatoia è già usata dal sistema o dall’app.";

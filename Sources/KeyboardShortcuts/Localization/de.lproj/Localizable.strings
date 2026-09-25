@@ -7,3 +7,6 @@
 "force_use_shortcut" = "Trotzdem verwenden";
 "ok" = "OK";
 "space_key" = "Leer";
+"none" = "keiner";
+"shortcut_disallowed_by_system" = "Dieser Kurzbefehl ist vom System nicht erlaubt.";
+"shortcut_used_by_system_or_app" = "Dieser Kurzbefehl wird bereits vom System oder der App verwendet.";

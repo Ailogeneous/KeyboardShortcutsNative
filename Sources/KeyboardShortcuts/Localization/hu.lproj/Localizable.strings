@@ -7,3 +7,6 @@
 "force_use_shortcut" = "Használat mindenképp";
 "ok" = "OK";
 "space_key" = "Szóköz";
+"none" = "nincs";
+"shortcut_disallowed_by_system" = "Ezt a billentyűparancsot a rendszer nem engedélyezi.";
+"shortcut_used_by_system_or_app" = "Ezt a billentyűparancsot már a rendszer vagy az alkalmazás használja.";

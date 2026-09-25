@@ -7,3 +7,6 @@
 "force_use_shortcut" = "Usar mesmo assim";
 "ok" = "OK";
 "space_key" = "Espaço";
+"none" = "nenhum";
+"shortcut_disallowed_by_system" = "Este atalho não é permitido pelo sistema.";
+"shortcut_used_by_system_or_app" = "Este atalho já é usado pelo sistema ou pelo app.";

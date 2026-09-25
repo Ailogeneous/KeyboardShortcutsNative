@@ -7,3 +7,6 @@
 "force_use_shortcut" = "Usar de todos modos";
 "ok" = "Aceptar";
 "space_key" = "Espacio";
+"none" = "ninguno";
+"shortcut_disallowed_by_system" = "El sistema no permite este atajo.";
+"shortcut_used_by_system_or_app" = "Este atajo ya lo usa el sistema o la app.";

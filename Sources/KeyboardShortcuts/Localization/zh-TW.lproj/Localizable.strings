@@ -7,3 +7,6 @@
 "force_use_shortcut" = "強制使用";
 "ok" = "好";
 "space_key" = "空格";
+"none" = "無";
+"shortcut_disallowed_by_system" = "系統不允許使用此快速鍵。";
+"shortcut_used_by_system_or_app" = "系統或應用程式已使用此快速鍵。";

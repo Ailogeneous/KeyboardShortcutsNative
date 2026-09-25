@@ -7,3 +7,6 @@
 "force_use_shortcut" = "Přesto použít";
 "ok" = "OK";
 "space_key" = "Mezera";
+"none" = "žádná";
+"shortcut_disallowed_by_system" = "Tuto klávesovou zkratku systém nepovoluje.";
+"shortcut_used_by_system_or_app" = "Tuto klávesovou zkratku již používá systém nebo aplikace.";

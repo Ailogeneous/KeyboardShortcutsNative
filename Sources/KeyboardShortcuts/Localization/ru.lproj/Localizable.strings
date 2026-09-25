@@ -7,3 +7,6 @@
 "force_use_shortcut" = "Все равно использовать";
 "ok" = "OK";
 "space_key" = "Пробел";
+"none" = "нет";
+"shortcut_disallowed_by_system" = "Эта комбинация клавиш запрещена системой.";
+"shortcut_used_by_system_or_app" = "Эта комбинация клавиш уже используется системой или приложением.";

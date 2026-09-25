@@ -7,3 +7,6 @@
 "force_use_shortcut" = "Použiť napriek tomu";
 "ok" = "OK";
 "space_key" = "Medzerník";
+"none" = "žiadna";
+"shortcut_disallowed_by_system" = "Systém túto klávesovú skratku nepovoľuje.";
+"shortcut_used_by_system_or_app" = "Túto klávesovú skratku už používa systém alebo aplikácia.";

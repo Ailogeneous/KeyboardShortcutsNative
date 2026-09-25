@@ -7,3 +7,6 @@
 "force_use_shortcut" = "Utiliser quand même";
 "ok" = "OK";
 "space_key" = "Espace";
+"none" = "aucun";
+"shortcut_disallowed_by_system" = "Ce raccourci n’est pas autorisé par le système.";
+"shortcut_used_by_system_or_app" = "Ce raccourci est déjà utilisé par le système ou l’app.";

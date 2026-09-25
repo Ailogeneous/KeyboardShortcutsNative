@@ -7,3 +7,6 @@
 "force_use_shortcut" = "Use Anyway";
 "ok" = "OK";
 "space_key" = "Space";
+"none" = "none";
+"shortcut_disallowed_by_system" = "This shortcut is disallowed by the system.";
+"shortcut_used_by_system_or_app" = "This shortcut is used by the system or the app.";

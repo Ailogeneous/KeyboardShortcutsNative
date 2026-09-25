@@ -7,3 +7,6 @@
 "force_use_shortcut" = "強制使用";
 "ok" = "OK";
 "space_key" = "スペース";
+"none" = "なし";
+"shortcut_disallowed_by_system" = "このショートカットはシステムで許可されていません。";
+"shortcut_used_by_system_or_app" = "このショートカットはシステムまたはアプリですでに使用されています。";

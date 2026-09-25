@@ -7,3 +7,6 @@
 "force_use_shortcut" = "Toch gebruiken";
 "ok" = "OK";
 "space_key" = "spatie";
+"none" = "geen";
+"shortcut_disallowed_by_system" = "Deze sneltoets is niet toegestaan door het systeem.";
+"shortcut_used_by_system_or_app" = "Deze sneltoets wordt al gebruikt door het systeem of de app.";
