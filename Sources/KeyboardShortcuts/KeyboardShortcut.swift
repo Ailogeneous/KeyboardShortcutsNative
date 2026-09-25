@@ -191,7 +191,7 @@ public struct KeyboardShortcutRecorder: View {
 							return .handled
 						}
 				} else {
-					Text(currentShortcut?.description ?? "none")
+					Text(currentShortcut?.description ?? "none".localized)
 						.font(.system(size: currentShortcut == nil ? 10 : 13, weight: .regular))
 						.foregroundStyle(currentShortcut == nil ? .secondary : .primary)
 				}
@@ -292,10 +292,10 @@ public struct KeyboardShortcutRecorder: View {
 
 			if shortcut.isDisallowed {
 				isConflicting = true
-				conflictReason = "This shortcut is disallowed by the system."
+				conflictReason = "shortcut_disallowed_by_system".localized
 			} else if shortcut.isTaken {
 				isConflicting = true
-				conflictReason = "This shortcut is used by the system or the app."
+				conflictReason = "shortcut_used_by_system_or_app".localized
 			} else {
 				isConflicting = false
 				conflictReason = ""
